@@ -1,14 +1,55 @@
 import { Component } from 'react';
 
 import './randomChar.scss';
-import thor from '../../resources/img/thor.jpeg';
+import errorIamge from '../../resources/img/error.png';
 import mjolnir from '../../resources/img/mjolnir.png';
+import ErrorMessage from '../errorMessage/errorMessage';
+import Spinner from '../spinner/spinner';
+
+import MarvelService from '../../services/MarvelService';
+
+function characterStateRender(state) {
+  const {
+    character: {
+      name,
+      description,
+      thumbnail: { path, extension },
+      urls: { charHomePage, charWikiPage },
+    },
+    loading,
+    error,
+  } = state;
+
+  return !error && !loading ? (
+    <div className="randomchar__block">
+      <img
+        src={`${path}.${extension}`}
+        alt="Random character"
+        className="randomchar__img"
+      />
+      <div className="randomchar__info">
+        <p className="randomchar__name">{name}</p>
+        <p className="randomchar__descr">{description}</p>
+        <div className="randomchar__btns">
+          <a href={charHomePage} className="button button__main">
+            <div className="inner">homepage</div>
+          </a>
+          <a href={charWikiPage} className="button button__secondary">
+            <div className="inner">Wiki</div>
+          </a>
+        </div>
+      </div>
+    </div>
+  ) : loading && !error ? (
+    <Spinner />
+  ) : (
+    <ErrorMessage errorIamge={errorIamge} />
+  );
+}
 
 class RandomChar extends Component {
   constructor(props) {
     super(props);
-
-    this.marvelService = this.props.marvelService;
 
     this.state = {
       character: {
@@ -17,72 +58,65 @@ class RandomChar extends Component {
         thumbnail: { path: '', extension: '' },
         urls: { charHomePage: '', charWikiPage: '' },
       },
+      error: false,
+      loading: true,
     };
   }
 
-  getRandomChar = () => {
-    this.marvelService
-      .fetchRandomCharacter()
-      .then(
-        ({
-          name,
-          description,
-          thumbnail: { path, extension },
-          urls: [charHomePage, charWikiPage],
-        }) => {
-          console.log('NAME === ' + name);
-          console.log('DESC === ' + description);
-          console.log('THUMBNAIL === ' + { path, extension });
-          console.log('URLS === ' + { charHomePage, charWikiPage });
+  marvelService = new MarvelService();
 
-          return this.setState({
-            character: {
-              name,
-              description,
-              thumbnail: { path, extension },
-              urls: {
-                charHomePage: charHomePage.url,
-                charWikiPage: charWikiPage.url,
-              },
-            },
-          });
-        }
-      );
-  };
+  updateRandomChar = () => {
+    this.setState({ error: false, loading: true });
 
-  componentDidMount = () => this.getRandomChar();
+    this.marvelService.fetchRandomCharacter().then(response => {
+      if (response.error) {
+        return this.setState({
+          error: !this.state.error,
+          loading: false,
+        });
+      }
 
-  render() {
-    const {
-      character: {
+      const {
         name,
         description,
         thumbnail: { path, extension },
-        urls: { charHomePage, charWikiPage },
-      },
-    } = this.state;
+        urls: [charHomePage, charWikiPage],
+      } = response;
+
+      return this.setState({
+        character: {
+          name,
+          description: description
+            ? description
+            : 'No description for this character...',
+          thumbnail: { path, extension },
+          urls: {
+            charHomePage: charHomePage.url,
+            charWikiPage: charWikiPage.url,
+          },
+        },
+        loading: false,
+      });
+    });
+  };
+
+  componentDidMount = () => this.updateRandomChar();
+
+  render() {
+    // const {
+    //   character: {
+    //     name,
+    //     description,
+    //     thumbnail: { path, extension },
+    //     urls: { charHomePage, charWikiPage },
+    //   },
+    // } = this.state;
 
     return (
       <div className="randomchar">
-        <div className="randomchar__block">
-          <img
-            src={`${path}.${extension}`}
-            alt="Random character"
-            className="randomchar__img"
-          />
-          <div className="randomchar__info">
-            <p className="randomchar__name">{name}</p>
-            <p className="randomchar__descr">{description}</p>
-            <div className="randomchar__btns">
-              <a href={charHomePage} className="button button__main">
-                <div className="inner">homepage</div>
-              </a>
-              <a href={charWikiPage} className="button button__secondary">
-                <div className="inner">Wiki</div>
-              </a>
-            </div>
-          </div>
-        </div>
+        {/* HERE!! */}
+        {characterStateRender(this.state)}
+
         <div className="randomchar__static">
           <p className="randomchar__title">
             Random character for today!
@@ -90,7 +124,10 @@ class RandomChar extends Component {
             Do you want to get to know him better?
           </p>
           <p className="randomchar__title">Or choose another one</p>
-          <button className="button button__main" onClick={this.getRandomChar}>
+          <button
+            className="button button__main"
+            onClick={this.updateRandomChar}
+          >
             <div className="inner">try it</div>
           </button>
           <img src={mjolnir} alt="mjolnir" className="randomchar__decoration" />
