@@ -8,19 +8,15 @@ import Spinner from '../spinner/spinner';
 
 import MarvelService from '../../services/MarvelService';
 
-function characterStateRender(state) {
+function CharacterStateRender({ characterData }) {
   const {
-    character: {
-      name,
-      description,
-      thumbnail: { path, extension },
-      urls: { charHomePage, charWikiPage },
-    },
-    loading,
-    error,
-  } = state;
+    name,
+    description,
+    thumbnail: { path, extension },
+    urls: { charHomePage, charWikiPage },
+  } = characterData;
 
-  return !error && !loading ? (
+  return (
     <div className="randomchar__block">
       <img
         src={`${path}.${extension}`}
@@ -40,11 +36,19 @@ function characterStateRender(state) {
         </div>
       </div>
     </div>
-  ) : loading && !error ? (
-    <Spinner />
-  ) : (
-    <ErrorMessage errorIamge={errorIamge} />
   );
+}
+
+// Cut description if it contains more than 35 words
+function descriptionViewManament(description) {
+  const paragraphWordsAmount = description.split(' ');
+
+  if (paragraphWordsAmount.length <= 35) {
+    return description;
+  }
+
+  const paragraph = paragraphWordsAmount.splice(0, 35).join(' ');
+  return `${paragraph}...`;
 }
 
 class RandomChar extends Component {
@@ -53,10 +57,10 @@ class RandomChar extends Component {
 
     this.state = {
       character: {
-        name: '',
-        description: '',
-        thumbnail: { path: '', extension: '' },
-        urls: { charHomePage: '', charWikiPage: '' },
+        // name: '',
+        // description: '',
+        // thumbnail: { path: '', extension: '' },
+        // urls: { charHomePage: '', charWikiPage: '' },
       },
       error: false,
       loading: true,
@@ -71,13 +75,6 @@ class RandomChar extends Component {
     return this.marvelService
       .fetchRandomCharacter()
       .then(response => {
-        // if (response.error) {
-        //   return this.setState({
-        //     error: !this.state.error,
-        //     loading: false,
-        //   });
-        // }
-
         const {
           name,
           description,
@@ -89,7 +86,7 @@ class RandomChar extends Component {
           character: {
             name,
             description: description
-              ? description
+              ? descriptionViewManament(description)
               : 'No description for this character...',
             thumbnail: { path, extension },
             urls: {
@@ -112,9 +109,19 @@ class RandomChar extends Component {
   componentDidMount = () => this.updateRandomChar();
 
   render() {
+    const { character, loading, error } = this.state;
+
+    const errorElem = error ? <ErrorMessage errorIamge={errorIamge} /> : null;
+    const loadingElem = loading ? <Spinner /> : null;
+    const characterView =
+      !loading && !error ? (
+        <CharacterStateRender characterData={character} />
+      ) : null;
+    const randomCharContent = characterView || loadingElem || errorElem;
+
     return (
       <div className="randomchar">
-        {characterStateRender(this.state)}
+        {randomCharContent}
 
         <div className="randomchar__static">
           <p className="randomchar__title">
