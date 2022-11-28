@@ -68,53 +68,52 @@ class RandomChar extends Component {
   updateRandomChar = () => {
     this.setState({ error: false, loading: true });
 
-    this.marvelService.fetchRandomCharacter().then(response => {
-      if (response.error) {
-        return this.setState({
-          error: !this.state.error,
-          loading: false,
-        });
-      }
+    return this.marvelService
+      .fetchRandomCharacter()
+      .then(response => {
+        // if (response.error) {
+        //   return this.setState({
+        //     error: !this.state.error,
+        //     loading: false,
+        //   });
+        // }
 
-      const {
-        name,
-        description,
-        thumbnail: { path, extension },
-        urls: [charHomePage, charWikiPage],
-      } = response;
-
-      return this.setState({
-        character: {
+        const {
           name,
-          description: description
-            ? description
-            : 'No description for this character...',
+          description,
           thumbnail: { path, extension },
-          urls: {
-            charHomePage: charHomePage.url,
-            charWikiPage: charWikiPage.url,
+          urls: [charHomePage, charWikiPage],
+        } = response;
+
+        return this.setState(() => ({
+          character: {
+            name,
+            description: description
+              ? description
+              : 'No description for this character...',
+            thumbnail: { path, extension },
+            urls: {
+              charHomePage: charHomePage.url,
+              charWikiPage: charWikiPage.url,
+            },
           },
-        },
-        loading: false,
-      });
-    });
+          error: false,
+          loading: false,
+        }));
+      })
+      .catch(() =>
+        this.setState({
+          error: true,
+          loading: false,
+        })
+      );
   };
 
   componentDidMount = () => this.updateRandomChar();
 
   render() {
-    // const {
-    //   character: {
-    //     name,
-    //     description,
-    //     thumbnail: { path, extension },
-    //     urls: { charHomePage, charWikiPage },
-    //   },
-    // } = this.state;
-
     return (
       <div className="randomchar">
-        {/* HERE!! */}
         {characterStateRender(this.state)}
 
         <div className="randomchar__static">

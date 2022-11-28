@@ -19,7 +19,7 @@ class App extends Component {
       <div className="app">
         <AppHeader />
         <main>
-          <RandomChar marvelService={this.props.marvelService} />
+          <RandomChar />
           <div className="char__content">
             <CharList />
             <CharInfo />

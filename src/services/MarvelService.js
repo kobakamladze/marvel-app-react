@@ -31,7 +31,7 @@ class MarvelService {
 
     return this.fetchMarvelData(`v1/public/characters/${characterId}`).then(
       response => {
-        if (response.status !== 'Ok') return Promise.resolve({ error: true });
+        // if (response.status !== 'Ok') return Promise.resolve({ error: true });
 
         if (response.data.results.length) return response.data.results[0];
       }
