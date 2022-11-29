@@ -26,10 +26,10 @@ class MarvelService {
       .finally();
   };
 
-  fetchCharacters = ({ limit, offset }) => {
-    return this.fetchMarvelData(`v1/public/characters`, limit, offset).then(
+  fetchCharacters = ({ limit = 9, offset }) =>
+    this.fetchMarvelData(`v1/public/characters`, limit, offset).then(
       response => {
-        const responseFilteredProps = response.data.results.map(
+        const responseWithFilteredProps = response.data.results.map(
           ({
             name,
             id,
@@ -42,19 +42,13 @@ class MarvelService {
             description,
             thumbnail: { path, extension },
             urls: [{ url: charHomePage }, { url: charWikiPage }],
-            condition: { inFocus: false },
+            condition: { selected: false },
           })
         );
 
-        console.log(
-          'FETCHED DATAAAA === ' + JSON.stringify(responseFilteredProps)
-        );
-
-        return responseFilteredProps;
-        //   console.log(JSON.stringify(response.data.results.map(({ id }) => id)));
+        return responseWithFilteredProps;
       }
     );
-  };
 
   fetchRandomCharacter = () => {
     const characterId = getRandomCharId();

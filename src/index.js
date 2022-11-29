@@ -5,8 +5,4 @@ import './style/style.scss';
 
 const rootElement = document.getElementById('root');
 
-ReactDOM.createRoot(rootElement).render(
-  <React.StrictMode>
-    <App />
-  </React.StrictMode>
-);
+ReactDOM.createRoot(rootElement).render(<App />);

@@ -56,12 +56,7 @@ class RandomChar extends Component {
     super(props);
 
     this.state = {
-      character: {
-        // name: '',
-        // description: '',
-        // thumbnail: { path: '', extension: '' },
-        // urls: { charHomePage: '', charWikiPage: '' },
-      },
+      character: {},
       error: false,
       loading: true,
     };
