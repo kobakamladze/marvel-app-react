@@ -8,6 +8,7 @@ import Spinner from '../spinner/spinner';
 
 import MarvelService from '../../services/MarvelService';
 
+// Characters
 function CharacterStateRender({ characterData }) {
   const {
     name,
@@ -64,8 +65,11 @@ class RandomChar extends Component {
 
   marvelService = new MarvelService();
 
+  onError = () => this.setState({ error: true, loading: false });
+  onLoading = () => this.setState({ error: false, loading: true });
+
   updateRandomChar = () => {
-    this.setState({ error: false, loading: true });
+    this.onLoading();
 
     return this.marvelService
       .fetchRandomCharacter()
@@ -93,12 +97,7 @@ class RandomChar extends Component {
           loading: false,
         }));
       })
-      .catch(() =>
-        this.setState({
-          error: true,
-          loading: false,
-        })
-      );
+      .catch(() => this.onError());
   };
 
   componentDidMount = () => this.updateRandomChar();

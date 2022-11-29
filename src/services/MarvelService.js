@@ -4,8 +4,8 @@ import axios from 'axios';
 // Min CharId = 1010801
 // Generates random number in range of (1010801, 1011500) for character ID
 function getRandomCharId() {
-  const min = Math.ceil(1010801);
-  const max = Math.floor(1011500);
+  const min = 1010801;
+  const max = 1011500;
   return Math.floor(Math.random() * (max - min) + min);
 }
 

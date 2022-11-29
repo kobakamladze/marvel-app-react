@@ -68,10 +68,13 @@ function LoadMoreButton(props) {
   );
 }
 
+// Generating random offset
+const randomOffset = Math.floor(Math.random() * (501 - 1) + 1);
+
 class CharList extends Component {
   state = {
     charactersList: [],
-    queryParams: { limit: 9, offset: 0 },
+    queryParams: { limit: 9, offset: randomOffset },
     stage: {
       error: false,
       loading: true,
