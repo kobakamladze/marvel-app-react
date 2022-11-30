@@ -61,6 +61,13 @@ class MarvelService {
       }
     );
   };
+
+  fetchPreciseCharacter = id => {
+    console.log('CHARACTER ID TO FETCH === ' + id);
+    return this.fetchMarvelData(`v1/public/characters/${id}`).then(response =>
+      console.log(JSON.stringify(response))
+    );
+  };
 }
 
 export default MarvelService;

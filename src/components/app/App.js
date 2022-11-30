@@ -11,18 +11,29 @@ class App extends Component {
   constructor(props) {
     super(props);
 
-    this.state = {};
+    this.state = {
+      charInfoSelectedCharacter: {
+        id: null,
+      },
+    };
   }
 
+  updateSelectedCharacter = id =>
+    this.setState({ charInfoSelectedCharacter: { id } });
+
   render() {
+    const {
+      charInfoSelectedCharacter: { id },
+    } = this.state;
+
     return (
       <div className="app">
         <AppHeader />
         <main>
           <RandomChar />
           <div className="char__content">
-            <CharList />
-            <CharInfo />
+            <CharList onCharacterUpdate={this.updateSelectedCharacter} />
+            <CharInfo characterId={id} />
           </div>
           <img className="bg-decoration" src={decoration} alt="vision" />
         </main>

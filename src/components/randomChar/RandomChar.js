@@ -65,9 +65,11 @@ class RandomChar extends Component {
 
   marvelService = new MarvelService();
 
+  // Stage managment
   onError = () => this.setState({ error: true, loading: false });
   onLoading = () => this.setState({ error: false, loading: true });
 
+  // Updating random character
   updateRandomChar = () => {
     this.onLoading();
 
@@ -100,6 +102,7 @@ class RandomChar extends Component {
       .catch(() => this.onError());
   };
 
+  // Updating random character immediately when component is mounted
   componentDidMount = () => this.updateRandomChar();
 
   render() {

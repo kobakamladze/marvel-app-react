@@ -1,7 +1,6 @@
 import { Component } from 'react';
 import MarvelService from '../../services/MarvelService';
 
-import Spinner from '../spinner/spinner';
 import ErrorMessage from '../errorMessage/errorMessage';
 import { Skeleton } from '@mui/material';
 
@@ -13,6 +12,7 @@ function CharacterCard(props) {
     name,
     thumbnail: { path, extension },
     condition: { selected },
+    onCharacterUpdate,
   } = props;
 
   const imageSrc = `${path}.${extension}`;
@@ -20,7 +20,7 @@ function CharacterCard(props) {
 
   return (
     <>
-      <li className="char__item">
+      <li className="char__item" onClick={onCharacterUpdate}>
         <img src={imageSrc} alt="abyss" />
         <div className={`char__name ${selectedClassName}`}>{name}</div>
       </li>
@@ -57,14 +57,12 @@ function CardsSkeleton() {
 // Button
 function LoadMoreButton(props) {
   return (
-    <ul className="char__grid">
-      <button
-        className="button button__main button__long"
-        onClick={() => props.function()}
-      >
-        <div className="inner">load more</div>
-      </button>
-    </ul>
+    <button
+      className="button button__main button__long"
+      onClick={() => props.function()}
+    >
+      <div className="inner">load more</div>
+    </button>
   );
 }
 
@@ -83,9 +81,11 @@ class CharList extends Component {
 
   marvelService = new MarvelService();
 
+  // Stage managment
   onError = () => this.setState({ stage: { error: true, loading: false } });
   onLoading = () => this.setState({ stage: { error: false, loading: true } });
 
+  // Fetching characters for list (by default 9)
   fetchMoreCharacters = () =>
     this.marvelService
       .fetchCharacters(this.state.queryParams)
@@ -100,6 +100,7 @@ class CharList extends Component {
       )
       .catch(() => this.onError());
 
+  // Fetching characters immediately when components is mounted
   componentDidMount = () => {
     this.onLoading();
     return this.fetchMoreCharacters();
@@ -111,12 +112,15 @@ class CharList extends Component {
       stage: { error, loading },
     } = this.state;
 
+    //Creating cards of characrters for list
     const cards = charactersList.map(({ name, id, thumbnail, condition }) => (
       <CharacterCard
         key={id}
         name={name}
+        id={id}
         thumbnail={thumbnail}
         condition={condition}
+        onCharacterUpdate={() => this.props.onCharacterUpdate(id)}
       />
     ));
 
