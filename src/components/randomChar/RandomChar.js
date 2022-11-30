@@ -13,17 +13,13 @@ function CharacterStateRender({ characterData }) {
   const {
     name,
     description,
-    thumbnail: { path, extension },
+    thumbnail,
     urls: { charHomePage, charWikiPage },
   } = characterData;
 
   return (
     <div className="randomchar__block">
-      <img
-        src={`${path}.${extension}`}
-        alt="Random character"
-        className="randomchar__img"
-      />
+      <img src={thumbnail} alt="Random character" className="randomchar__img" />
       <div className="randomchar__info">
         <p className="randomchar__name">{name}</p>
         <p className="randomchar__descr">{description}</p>
@@ -79,8 +75,9 @@ class RandomChar extends Component {
         const {
           name,
           description,
-          thumbnail: { path, extension },
-          urls: [charHomePage, charWikiPage],
+          thumbnail,
+          homePageUrl: charHomePage,
+          wikiUrl: charWikiPage,
         } = response;
 
         return this.setState(() => ({
@@ -89,10 +86,10 @@ class RandomChar extends Component {
             description: description
               ? descriptionViewManament(description)
               : 'No description for this character...',
-            thumbnail: { path, extension },
+            thumbnail,
             urls: {
-              charHomePage: charHomePage.url,
-              charWikiPage: charWikiPage.url,
+              charHomePage: charHomePage,
+              charWikiPage: charWikiPage,
             },
           },
           error: false,

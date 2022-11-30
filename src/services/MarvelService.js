@@ -57,16 +57,46 @@ class MarvelService {
       response => {
         if (response.status !== 'Ok') return Promise.resolve({ error: true });
 
-        if (response.data.results.length) return response.data.results[0];
+        if (response.data.results.length) {
+          const {
+            name,
+            description,
+            thumbnail: { path, extension },
+            urls: [charHomePage, charWikiPage],
+          } = response.data.results[0];
+
+          return {
+            name,
+            description,
+            thumbnail: `${path}.${extension}`,
+            homePageUrl: charHomePage,
+            wikiUrl: charWikiPage,
+          };
+        }
       }
     );
   };
 
   fetchPreciseCharacter = id => {
     console.log('CHARACTER ID TO FETCH === ' + id);
-    return this.fetchMarvelData(`v1/public/characters/${id}`).then(response =>
-      console.log(JSON.stringify(response))
-    );
+    return this.fetchMarvelData(`v1/public/characters/${id}`).then(response => {
+      console.log(JSON.stringify(response));
+      const {
+        name,
+        id,
+        description,
+        thumbnail: { path, extension },
+        comics,
+      } = response.data.results[0];
+
+      return {
+        name,
+        id,
+        description,
+        thumbnail: `${path}.${extension}`,
+        comics,
+      };
+    });
   };
 }
 

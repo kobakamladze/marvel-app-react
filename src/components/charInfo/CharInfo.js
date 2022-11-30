@@ -19,7 +19,7 @@ class CharInfo extends Component {
 
     this.state = {
       selectedCharacter: {
-        id: 0,
+        id: 1011333,
       },
       stage: {
         error: false,
