@@ -3,7 +3,7 @@ import axios from 'axios';
 // Max CharId = 1011500
 // Min CharId = 1010801
 // Generates random number in range of (1010801, 1011500) for character ID
-function getRandomCharId() {
+function generateRandomCharId() {
   const min = 1010801;
   const max = 1011500;
   return Math.floor(Math.random() * (max - min) + min);
@@ -51,7 +51,7 @@ class MarvelService {
     );
 
   fetchRandomCharacter = () => {
-    const characterId = getRandomCharId();
+    const characterId = generateRandomCharId();
 
     return this.fetchMarvelData(`v1/public/characters/${characterId}`).then(
       response => {
@@ -62,7 +62,7 @@ class MarvelService {
             name,
             description,
             thumbnail: { path, extension },
-            urls: [charHomePage, charWikiPage],
+            urls: [{ url: charHomePage }, { url: charWikiPage }],
           } = response.data.results[0];
 
           return {
@@ -77,16 +77,15 @@ class MarvelService {
     );
   };
 
-  fetchPreciseCharacter = id => {
-    console.log('CHARACTER ID TO FETCH === ' + id);
+  fetchPreciseCharacter = (id = generateRandomCharId()) => {
     return this.fetchMarvelData(`v1/public/characters/${id}`).then(response => {
-      console.log(JSON.stringify(response));
       const {
         name,
         id,
         description,
         thumbnail: { path, extension },
-        comics,
+        urls: [{ url: charHomePage }, { url: charWikiPage }],
+        comics: { items: comics },
       } = response.data.results[0];
 
       return {
@@ -94,6 +93,7 @@ class MarvelService {
         id,
         description,
         thumbnail: `${path}.${extension}`,
+        urls: { charHomePage, charWikiPage },
         comics,
       };
     });

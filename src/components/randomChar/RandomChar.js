@@ -88,8 +88,8 @@ class RandomChar extends Component {
               : 'No description for this character...',
             thumbnail,
             urls: {
-              charHomePage: charHomePage,
-              charWikiPage: charWikiPage,
+              charHomePage,
+              charWikiPage,
             },
           },
           error: false,
