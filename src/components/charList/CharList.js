@@ -59,7 +59,8 @@ function LoadMoreButton(props) {
   return (
     <button
       className="button button__main button__long"
-      onClick={() => props.function()}
+      disabled={props.condition}
+      onClick={() => props.fetchMoreCharacters()}
     >
       <div className="inner">load more</div>
     </button>
@@ -72,11 +73,12 @@ const randomOffset = Math.floor(Math.random() * (501 - 1) + 1);
 class CharList extends Component {
   state = {
     charactersList: [],
-    queryParams: { limit: 9, offset: randomOffset },
+    queryParams: { limit: 9, offset: randomOffset + 210 },
     stage: {
       error: false,
       loading: true,
     },
+    loadingButtonDisabled: false,
   };
 
   marvelService = new MarvelService();
@@ -85,9 +87,15 @@ class CharList extends Component {
   onError = () => this.setState({ stage: { error: true, loading: false } });
   onLoading = () => this.setState({ stage: { error: false, loading: true } });
 
+  // Disable or enable button
+  disableButton = () =>
+    this.setState(state => ({ ...state, loadingButtonDisabled: true }));
+
   // Fetching characters for list (by default 9)
-  fetchMoreCharacters = () =>
-    this.marvelService
+  fetchMoreCharacters = () => {
+    this.disableButton();
+
+    return this.marvelService
       .fetchCharacters(this.state.queryParams)
       .then(response =>
         this.setState(({ charactersList, queryParams: { offset } }) => ({
@@ -96,9 +104,11 @@ class CharList extends Component {
             offset: offset + 9,
           },
           stage: { error: false, loading: false },
+          loadingButtonDisabled: false,
         }))
       )
       .catch(() => this.onError());
+  };
 
   // Fetching characters immediately when components is mounted
   componentDidMount = () => {
@@ -110,6 +120,7 @@ class CharList extends Component {
     const {
       charactersList,
       stage: { error, loading },
+      loadingButtonDisabled,
     } = this.state;
 
     //Creating cards of characrters for list
@@ -126,7 +137,10 @@ class CharList extends Component {
 
     const loadMoreButtonCondition =
       charactersList.length < 18 ? (
-        <LoadMoreButton function={this.fetchMoreCharacters} />
+        <LoadMoreButton
+          fetchMoreCharacters={this.fetchMoreCharacters}
+          condition={loadingButtonDisabled}
+        />
       ) : null;
 
     const errorElem = error ? <ErrorMessage /> : null;

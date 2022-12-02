@@ -3,15 +3,17 @@ import { Component } from 'react';
 
 import MarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/errorMessage';
-import errorIamge from '../../resources/img/error.png';
 
 import './charInfo.scss';
 
+// Creating element with photo and description of character
 function BasicCharacterInfo({
-  name,
-  description,
-  thumbnail,
-  urls: { charHomePage, charWikiPage },
+  data: {
+    name,
+    description,
+    thumbnail,
+    urls: { charHomePage, charWikiPage },
+  },
 }) {
   let descriptionToDisplay;
   if (description) {
@@ -33,36 +35,51 @@ function BasicCharacterInfo({
               <div className="inner">homepage</div>
             </a>
             <a href={charWikiPage} className="button button__secondary">
-              <div className="inner"></div>
+              <div className="inner">wiki</div>
             </a>
           </div>
         </div>
       </div>
-      <div className="char__descr">{descriptionToDisplay}</div>
+      <div className="char__descr">
+        {descriptionToDisplay || 'No description for this character...'}
+      </div>
     </>
   );
 }
 
+// Creating list of comics
 function ComicsList({ comicsList }) {
   return (
     <>
       <div className="char__comics">Comics:</div>
       <ul className="char__comics-list">
-        {comicsList.length ? (
-          comicsList.splice(0, 10).map(({ name, resourceURI }) => (
-            <li className="char__comics-item">
-              <a href={resourceURI}>{name}</a>
-            </li>
-          ))
-        ) : (
-          <li className="char__comics-item">
-            {'No comics found for this character'}
-          </li>
-        )}
+        {comicsList.length
+          ? comicsList.splice(0, 10).map(({ name, resourceURI }, i) => (
+              <li className="char__comics-item" key={i}>
+                <a href={resourceURI}>{name}</a>
+              </li>
+            ))
+          : 'No comics found for this character'}
       </ul>
     </>
   );
 }
+
+// Skeleton for loading
+const characterInfoLoadingSkeleton = (
+  <>
+    <Skeleton variant="circular" width={80} height={80} animation="wave" />
+    <Skeleton
+      style={{ margin: '15px 0' }}
+      variant="rectangular"
+      height={150}
+      animation="wave"
+    />
+    <Skeleton animation="wave" />
+    <Skeleton animation="wave" />
+    <Skeleton animation="wave" />
+  </>
+);
 
 class CharInfo extends Component {
   constructor(props) {
@@ -79,17 +96,28 @@ class CharInfo extends Component {
 
   // Stage managment
   onError = () => this.setState({ error: true, loading: false });
-  onLoading = () => this.setState({ error: false, loading: true });
+  onLoading = () =>
+    this.setState(
+      this.setState(state => ({
+        ...state,
+        stage: { error: false, loading: true },
+      }))
+    );
 
   marvelService = new MarvelService();
 
   // Update character
   updateCharacter = () => {
+    // Show loading template
+    this.onLoading();
+
     const { characterId } = this.props;
     if (!characterId) {
       return;
     }
 
+    // Fetch clicked character, store it into state and stop loading
+    // also call onError function if error occures
     return this.marvelService
       .fetchPreciseCharacter(this.props.characterId)
       .then(response =>
@@ -113,38 +141,16 @@ class CharInfo extends Component {
       this.updateCharacter();
   };
 
+  componentDidCatch = (error, errorInfo) => this.onError();
+
   render() {
     const {
       character,
       stage: { loading, error },
     } = this.state;
 
-    console.log(
-      JSON.stringify('STATED === ' + JSON.stringify(this.state.character))
-    );
-
-    const loadingElem =
-      loading && !error ? (
-        <>
-          <Skeleton
-            variant="circular"
-            width={80}
-            height={80}
-            animation="wave"
-          />
-          <Skeleton
-            style={{ margin: '15px 0' }}
-            variant="rectangular"
-            height={150}
-            animation="wave"
-          />
-          <Skeleton animation="wave" />
-          <Skeleton animation="wave" />
-          <Skeleton animation="wave" />
-        </>
-      ) : null;
-    const errorElem = error ? <ErrorMessage errorIamge={errorIamge} /> : null;
-
+    const loadingElem = loading && !error ? characterInfoLoadingSkeleton : null;
+    const errorElem = error ? <ErrorMessage /> : null;
     const content =
       !loading && !error && character ? (
         <>
@@ -152,6 +158,7 @@ class CharInfo extends Component {
           <ComicsList comicsList={character.comics} />
         </>
       ) : null;
+
     return (
       <div className="char__info">
         {loadingElem}

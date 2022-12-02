@@ -1,12 +1,8 @@
 import { Component } from 'react';
 
+import error from '../../resources/img/error.png';
+
 class ErrorMessage extends Component {
-  constructor(props) {
-    super(props);
-
-    this.errorIamge = this.props.errorIamge;
-  }
-
   render() {
     return (
       <div
@@ -16,7 +12,7 @@ class ErrorMessage extends Component {
           alignItems: 'center',
         }}
       >
-        <img src={this.errorIamge} style={{ height: '100px' }} alt="ERROR" />
+        <img src={error} style={{ height: '100px' }} alt="ERROR" />
       </div>
     );
   }

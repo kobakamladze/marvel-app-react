@@ -1,7 +1,6 @@
 import { Component } from 'react';
 
 import './randomChar.scss';
-import errorIamge from '../../resources/img/error.png';
 import mjolnir from '../../resources/img/mjolnir.png';
 import ErrorMessage from '../errorMessage/errorMessage';
 import Spinner from '../spinner/spinner';
@@ -105,7 +104,7 @@ class RandomChar extends Component {
   render() {
     const { character, loading, error } = this.state;
 
-    const errorElem = error ? <ErrorMessage errorIamge={errorIamge} /> : null;
+    const errorElem = error ? <ErrorMessage /> : null;
     const loadingElem = loading ? <Spinner /> : null;
     const characterView =
       !loading && !error ? (
