@@ -1,7 +1,13 @@
 import { Component } from 'react';
 
 class Spinner extends Component {
+  constructor(props) {
+    super(props);
+  }
+
   render() {
+    const heightProp = this.props?.styleHeight?.height || '177px';
+
     return (
       <div
         style={{
@@ -22,7 +28,7 @@ class Spinner extends Component {
             shapeRendering: 'auto',
           }}
           width="177px"
-          height="177px"
+          height={heightProp}
           viewBox="0 0 100 100"
           preserveAspectRatio="xMidYMid"
         >

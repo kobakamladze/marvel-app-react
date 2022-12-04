@@ -2,6 +2,7 @@ import { Component } from 'react';
 import MarvelService from '../../services/MarvelService';
 
 import ErrorMessage from '../errorMessage/errorMessage';
+import Spinner from '../spinner/spinner';
 import { Skeleton } from '@mui/material';
 
 import './charList.scss';
@@ -56,10 +57,15 @@ function CardsSkeleton() {
 
 // Button
 function LoadMoreButton(props) {
+  if (props.isLoading)
+    return (
+      <div>
+        <Spinner styleHeight={{ height: '80px' }} />
+      </div>
+    );
   return (
     <button
       className="button button__main button__long"
-      disabled={props.condition}
       onClick={() => props.fetchMoreCharacters()}
     >
       <div className="inner">load more</div>
@@ -78,7 +84,9 @@ class CharList extends Component {
       error: false,
       loading: true,
     },
-    loadingButtonDisabled: false,
+    loadMoreButton: {
+      loading: true,
+    },
   };
 
   marvelService = new MarvelService();
@@ -86,27 +94,31 @@ class CharList extends Component {
   // Stage managment
   onError = () => this.setState({ stage: { error: true, loading: false } });
   onLoading = () => this.setState({ stage: { error: false, loading: true } });
-
-  // Disable or enable button
-  disableButton = () =>
-    this.setState(state => ({ ...state, loadingButtonDisabled: true }));
+  buttonOnLoading = () =>
+    this.setState({
+      loadMoreButton: {
+        loading: true,
+      },
+    });
 
   // Fetching characters for list (by default 9)
   fetchMoreCharacters = () => {
-    this.disableButton();
+    this.buttonOnLoading();
 
     return this.marvelService
       .fetchCharacters(this.state.queryParams)
-      .then(response =>
+      .then(response => {
         this.setState(({ charactersList, queryParams: { offset } }) => ({
           charactersList: [...charactersList, ...response],
           queryParams: {
             offset: offset + 9,
           },
           stage: { error: false, loading: false },
-          loadingButtonDisabled: false,
-        }))
-      )
+          loadMoreButton: {
+            loading: false,
+          },
+        }));
+      })
       .catch(() => this.onError());
   };
 
@@ -117,11 +129,7 @@ class CharList extends Component {
   };
 
   render() {
-    const {
-      charactersList,
-      stage: { error, loading },
-      loadingButtonDisabled,
-    } = this.state;
+    const { charactersList, stage, loadMoreButton } = this.state;
 
     //Creating cards of characrters for list
     const cards = charactersList.map(({ name, id, thumbnail, condition }) => (
@@ -139,16 +147,16 @@ class CharList extends Component {
       charactersList.length < 18 ? (
         <LoadMoreButton
           fetchMoreCharacters={this.fetchMoreCharacters}
-          condition={loadingButtonDisabled}
+          isLoading={loadMoreButton.loading}
         />
       ) : null;
 
-    const errorElem = error ? <ErrorMessage /> : null;
-    const loadingElem = loading ? <CardsSkeleton /> : null;
+    const errorElem = stage.error ? <ErrorMessage /> : null;
+    const loadingElem = stage.loading ? <CardsSkeleton /> : null;
     const content =
-      !error && !loading ? (
+      !stage.error && !stage.loading ? (
         <ul className="char__grid">{cards}</ul>
-      ) : error && !loading ? (
+      ) : stage.error && !stage.loading ? (
         errorElem
       ) : (
         loadingElem
