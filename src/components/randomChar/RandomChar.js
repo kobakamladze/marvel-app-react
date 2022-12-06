@@ -1,4 +1,4 @@
-import { Component } from 'react';
+import { useEffect, useState } from 'react';
 
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
@@ -6,6 +6,7 @@ import ErrorMessage from '../errorMessage/errorMessage';
 import Spinner from '../spinner/spinner';
 
 import MarvelService from '../../services/MarvelService';
+import useComponentCondition from '../../hooks/componentConditionHook';
 
 // Characters
 function CharacterStateRender({ characterData }) {
@@ -47,28 +48,16 @@ function descriptionViewManament(description) {
   return `${paragraph}...`;
 }
 
-class RandomChar extends Component {
-  constructor(props) {
-    super(props);
+const RandomChar = props => {
+  const [character, setCharacter] = useState({});
+  const componentCondition = useComponentCondition();
 
-    this.state = {
-      character: {},
-      error: false,
-      loading: true,
-    };
-  }
-
-  marvelService = new MarvelService();
-
-  // Stage managment
-  onError = () => this.setState({ error: true, loading: false });
-  onLoading = () => this.setState({ error: false, loading: true });
+  const marvelService = new MarvelService();
 
   // Updating random character
-  updateRandomChar = () => {
-    this.onLoading();
-
-    return this.marvelService
+  const updateRandomChar = () => {
+    componentCondition.startLoading();
+    return marvelService
       .fetchRandomCharacter()
       .then(response => {
         const {
@@ -79,61 +68,60 @@ class RandomChar extends Component {
           wikiUrl: charWikiPage,
         } = response;
 
-        return this.setState(() => ({
-          character: {
-            name,
-            description: description
-              ? descriptionViewManament(description)
-              : 'No description for this character...',
-            thumbnail,
-            urls: {
-              charHomePage,
-              charWikiPage,
-            },
+        setCharacter(() => ({
+          name,
+          description: description
+            ? descriptionViewManament(description)
+            : 'No description for this character...',
+          thumbnail,
+          urls: {
+            charHomePage,
+            charWikiPage,
           },
-          error: false,
-          loading: false,
         }));
+
+        componentCondition.stopLoading();
       })
-      .catch(() => this.onError());
+      .catch(() => componentCondition.onErrorSet());
   };
 
   // Updating random character immediately when component is mounted
-  componentDidMount = () => this.updateRandomChar();
+  useEffect(() => {
+    async function fetchData() {
+      return await updateRandomChar();
+    }
+    fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
-  render() {
-    const { character, loading, error } = this.state;
+  const { loadingValue, errorValue } = componentCondition;
 
-    const errorElem = error ? <ErrorMessage /> : null;
-    const loadingElem = loading ? <Spinner /> : null;
-    const characterView =
-      !loading && !error ? (
-        <CharacterStateRender characterData={character} />
-      ) : null;
-    const randomCharContent = characterView || loadingElem || errorElem;
-
-    return (
-      <div className="randomchar">
-        {randomCharContent}
-
-        <div className="randomchar__static">
-          <p className="randomchar__title">
-            Random character for today!
-            <br />
-            Do you want to get to know him better?
-          </p>
-          <p className="randomchar__title">Or choose another one</p>
-          <button
-            className="button button__main"
-            onClick={this.updateRandomChar}
-          >
-            <div className="inner">try it</div>
-          </button>
-          <img src={mjolnir} alt="mjolnir" className="randomchar__decoration" />
-        </div>
-      </div>
+  const content =
+    !loadingValue && !errorValue ? (
+      <CharacterStateRender characterData={character} />
+    ) : !errorValue && loadingValue ? (
+      <Spinner />
+    ) : (
+      <ErrorMessage />
     );
-  }
-}
+
+  return (
+    <div className="randomchar">
+      {content}
+      <div className="randomchar__static">
+        <p className="randomchar__title">
+          Random character for today!
+          <br />
+          Do you want to get to know him better?
+        </p>
+        <p className="randomchar__title">Or choose another one</p>
+        <button className="button button__main" onClick={updateRandomChar}>
+          <div className="inner">try it</div>
+        </button>
+        <img src={mjolnir} alt="mjolnir" className="randomchar__decoration" />
+      </div>
+    </div>
+  );
+};
 
 export default RandomChar;

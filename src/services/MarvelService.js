@@ -51,11 +51,11 @@ class MarvelService {
     );
 
   fetchRandomCharacter = () => {
-    const characterId = generateRandomCharId();
+    const randomCharacterId = generateRandomCharId();
 
-    return this.fetchMarvelData(`v1/public/characters/${characterId}`).then(
-      response => {
-        if (response.status !== 'Ok') return Promise.resolve({ error: true });
+    return this.fetchMarvelData(`v1/public/characters/${randomCharacterId}`)
+      .then(response => {
+        // if (response.status !== 'Ok') return Promise.reject({ error: true });
 
         if (response.data.results.length) {
           const {
@@ -73,8 +73,8 @@ class MarvelService {
             wikiUrl: charWikiPage,
           };
         }
-      }
-    );
+      })
+      .catch(() => Promise.reject({ error: true }));
   };
 
   fetchPreciseCharacter = (id = generateRandomCharId()) => {

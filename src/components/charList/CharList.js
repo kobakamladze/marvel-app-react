@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import MarvelService from '../../services/MarvelService';
 
+import useComponentCondition from '../../hooks/componentConditionHook';
 import ErrorMessage from '../errorMessage/errorMessage';
 import Spinner from '../spinner/spinner';
 import { Skeleton } from '@mui/material';
@@ -105,12 +106,11 @@ const CharList = props => {
     limit: 9,
     offset: randomOffset + 210,
   });
-  const [stage, setStage] = useState({ error: false, loading: true });
   const [loadMoreButton, setLoadMoreButton] = useState({ loading: true });
 
-  // States managment
-  const onError = () => setStage({ error: true, loading: false });
-  const onLoading = () => setStage({ error: false, loading: true });
+  const componentCondition = useComponentCondition();
+
+  // Load more butto condition managment
   const buttonOnLoading = () =>
     setLoadMoreButton({
       loading: true,
@@ -128,19 +128,20 @@ const CharList = props => {
           ...queryParams,
           offset: queryParams.offset + 9,
         }));
-        setStage({ error: false, loading: false });
+        componentCondition.stopLoading();
         setLoadMoreButton({ loading: false });
       })
-      .catch(() => onError());
+      .catch(() => componentCondition.onErrorSet());
   };
 
   // Fetching characters immediately when components is mounted
   useEffect(() => {
-    onLoading();
+    componentCondition.startLoading();
     async function fetchData() {
       return await fetchMoreCharacters();
     }
     fetchData();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   //Creating cards of characrters for list
@@ -163,15 +164,15 @@ const CharList = props => {
       />
     ) : null;
 
-  const errorElem = stage.error ? <ErrorMessage /> : null;
-  const loadingElem = stage.loading ? <CardsSkeleton /> : null;
+  const { loadingValue, errorValue } = componentCondition;
+
   const content =
-    !stage.error && !stage.loading ? (
+    !errorValue && !loadingValue ? (
       <ul className="char__grid">{cards}</ul>
-    ) : stage.error && !stage.loading ? (
-      errorElem
+    ) : errorValue && !loadingValue ? (
+      <ErrorMessage />
     ) : (
-      loadingElem
+      CardsSkeleton
     );
 
   return (
