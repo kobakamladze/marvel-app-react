@@ -1,5 +1,5 @@
 import { Skeleton } from '@mui/material';
-import { Component } from 'react';
+import { useEffect, useState, useRef, useMemo } from 'react';
 
 import MarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/errorMessage';
@@ -81,92 +81,75 @@ const characterInfoLoadingSkeleton = (
   </>
 );
 
-class CharInfo extends Component {
-  constructor(props) {
-    super(props);
+// Class for fetching data
+const marvelService = new MarvelService();
 
-    this.state = {
-      character: null,
-      stage: {
-        error: false,
-        loading: true,
-      },
-    };
-  }
+// Main function component
+const CharInfo = props => {
+  // State
+  const [chosenCharacter, setChosenCharacter] = useState(null);
+  const [stage, setStage] = useState({ error: false, loading: true });
 
-  // Stage managment
-  onError = () => this.setState({ error: true, loading: false });
-  onLoading = () =>
-    this.setState(
-      this.setState(state => ({
-        ...state,
-        stage: { error: false, loading: true },
-      }))
-    );
-
-  marvelService = new MarvelService();
+  // State managment
+  const onError = () => setStage({ error: true, loading: false });
+  const onLoading = () => setStage({ error: false, loading: true });
+  const onNewCharacterId = newCharacter => setChosenCharacter(newCharacter);
 
   // Update character
-  updateCharacter = () => {
+  const updateCharacterInfo = () => {
     // Show loading template
-    this.onLoading();
+    onLoading();
 
-    const { characterId } = this.props;
+    const { characterId } = props;
     if (!characterId) {
       return;
     }
 
     // Fetch clicked character, store it into state and stop loading
     // also call onError function if error occures
-    return this.marvelService
-      .fetchPreciseCharacter(this.props.characterId)
-      .then(response =>
-        this.setState(() => ({
-          character: response,
-          stage: {
-            error: false,
-            loading: false,
-          },
-        }))
-      )
-      .catch(() => this.onError());
+    return marvelService
+      .fetchPreciseCharacter(props.characterId)
+      .then(response => {
+        onNewCharacterId(response);
+        setStage({
+          error: false,
+          loading: false,
+        });
+      })
+      .catch(() => onError());
   };
 
   // Updating character when component is mounted to display its info
-  componentDidMount = () => this.updateCharacter();
+  useEffect(() => updateCharacterInfo, []);
 
   // Updating character to display its info
-  componentDidUpdate = (prevProps, prevState) => {
-    if (prevProps.characterId !== this.props.characterId)
-      this.updateCharacter();
-  };
+  useEffect(() => {
+    async function fetchData() {
+      return await updateCharacterInfo();
+    }
+    fetchData();
+  }, [props.characterId]);
 
-  componentDidCatch = (error, errorInfo) => this.onError();
+  console.log(props.characterId);
 
-  render() {
-    const {
-      character,
-      stage: { loading, error },
-    } = this.state;
+  const loadingElem =
+    stage.loading && !stage.error ? characterInfoLoadingSkeleton : null;
+  const errorElem = stage.error ? <ErrorMessage /> : null;
+  const content =
+    !stage.loading && !stage.error && chosenCharacter ? (
+      <>
+        <BasicCharacterInfo data={chosenCharacter} />
+        <ComicsList comicsList={chosenCharacter.comics} />
+      </>
+    ) : null;
 
-    const loadingElem = loading && !error ? characterInfoLoadingSkeleton : null;
-    const errorElem = error ? <ErrorMessage /> : null;
-    const content =
-      !loading && !error && character ? (
-        <>
-          <BasicCharacterInfo data={character} />
-          <ComicsList comicsList={character.comics} />
-        </>
-      ) : null;
-
-    return (
-      <div className="char__info">
-        {loadingElem}
-        {errorElem}
-        {content}
-      </div>
-    );
-  }
-}
+  return (
+    <div className="char__info">
+      {loadingElem}
+      {errorElem}
+      {content}
+    </div>
+  );
+};
 
 export default CharInfo;
