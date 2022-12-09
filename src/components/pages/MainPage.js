@@ -1,8 +1,15 @@
-import React from 'react';
-import RandomChar from '../randomChar/RandomChar';
-import CharList from '../charList/CharList';
+import { useState } from 'react';
 
-const ComicsPage = () => {
+import RandomChar from '../randomChar/RandomChar';
+import CharInfo from '../charInfo/CharInfo';
+import CharList from '../charList/CharList';
+import ErrorBoundary from '../errorBoundary/ErrorBoundary';
+
+import decoration from '../../resources/img/vision.png';
+
+const MainPage = ({ id }) => {
+  const [characterId, setCharacterId] = useState(null);
+
   return (
     <>
       <RandomChar />
@@ -17,4 +24,4 @@ const ComicsPage = () => {
   );
 };
 
-export default ComicsPage;
+export default MainPage;
