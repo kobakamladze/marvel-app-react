@@ -134,13 +134,14 @@ const CharList = props => {
       .catch(() => onError());
   };
 
-  // Fetching characters immediately when components is mounted
+  // Fetching characters immediately when component is mounted
   useEffect(() => {
     onLoading();
     async function fetchData() {
       return await fetchMoreCharacters();
     }
     fetchData();
+    // eslint-disable-next-line
   }, []);
 
   //Creating cards of characrters for list

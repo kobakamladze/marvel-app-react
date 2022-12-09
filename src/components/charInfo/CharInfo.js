@@ -1,5 +1,5 @@
 import { Skeleton } from '@mui/material';
-import { useEffect, useState, useRef, useMemo } from 'react';
+import { useEffect, useState } from 'react';
 
 import MarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/errorMessage';
@@ -120,6 +120,7 @@ const CharInfo = props => {
   };
 
   // Updating character when component is mounted to display its info
+  // eslint-disable-next-line
   useEffect(() => updateCharacterInfo, []);
 
   // Updating character to display its info
@@ -128,9 +129,8 @@ const CharInfo = props => {
       return await updateCharacterInfo();
     }
     fetchData();
+    // eslint-disable-next-line
   }, [props.characterId]);
-
-  console.log(props.characterId);
 
   const loadingElem =
     stage.loading && !stage.error ? characterInfoLoadingSkeleton : null;
