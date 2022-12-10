@@ -58,13 +58,13 @@ function generateRandomCharId() {
 
 const RandomChar = () => {
   const [character, setCharacter] = useState({});
-  const { fetchPreciseCharacter, loading, error, clearError } =
+  const { fetchSingleCharacter, loading, error, clearError } =
     useMarvelService();
 
   // Updating random character
   const updateRandomChar = () => {
     clearError();
-    return fetchPreciseCharacter(generateRandomCharId())
+    return fetchSingleCharacter(generateRandomCharId())
       .then(response => {
         const {
           name,

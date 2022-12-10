@@ -86,7 +86,7 @@ const CharInfo = props => {
   // State
   const [chosenCharacter, setChosenCharacter] = useState(null);
 
-  const { fetchPreciseCharacter, loading, error } = useMarvelService();
+  const { fetchSingleCharacter, loading, error } = useMarvelService();
 
   // State managment
   const onNewCharacterId = newCharacter => setChosenCharacter(newCharacter);
@@ -99,7 +99,7 @@ const CharInfo = props => {
 
     // Fetch clicked character, store it into state and stop loading
     // also call onError function if error occures
-    return fetchPreciseCharacter(props.characterId)
+    return fetchSingleCharacter(props.characterId)
       .then(response => onNewCharacterId(response))
       .catch(() => {});
   };
