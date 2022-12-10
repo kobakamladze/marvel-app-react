@@ -1,12 +1,12 @@
-import { useEffect } from 'react';
-
-import useMarvelService from '../../services/MarvelService';
-
 import './comicsList.scss';
+
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import SingleComic from '../singleComic/SingleComic';
-import { useState } from 'react';
 import { Skeleton } from '@mui/material';
+
+import SingleComic from '../singleComic/SingleComic';
+import Spinner from '../spinner/spinner';
+import useMarvelService from '../../services/MarvelService';
 
 // Comic card
 const Comic = ({ comicsList }) => {
@@ -34,6 +34,20 @@ const CardsSkeleton = () => {
   );
 
   return Array(8).fill(customSkeleton);
+};
+
+// Load more button component
+const LoadMoreButton = ({ comicsList, loading, fetchMoreComics }) => {
+  return comicsList.length < 18 && !loading ? (
+    <button
+      className="button button__main button__long"
+      onClick={fetchMoreComics}
+    >
+      <div className="inner">load more</div>
+    </button>
+  ) : loading ? (
+    <Spinner styleHeight={{ height: '80px' }} />
+  ) : null;
 };
 
 // Generating random offset to fetch random comics
@@ -65,6 +79,7 @@ const ComicsList = () => {
       return await fetchComicsForList();
     }
     fetchData();
+    // eslint-disable-next-line
   }, []);
 
   const content =

@@ -22,7 +22,11 @@ const CharacterCardsList = ({ charactersList, onCharacterUpdate }) => (
       const selectedClassName = selected ? 'char__item_selected' : null;
 
       return (
-        <li className="char__item" onClick={() => onCharacterUpdate(id)}>
+        <li
+          key={id}
+          className="char__item"
+          onClick={() => onCharacterUpdate(id)}
+        >
           <img src={thumbnail} alt="abyss" />
           <div className={`char__name ${selectedClassName}`}>{name}</div>
         </li>
@@ -36,7 +40,7 @@ const LoadMoreButton = ({ charactersList, loading, fetchMoreCharacters }) => {
   return charactersList.length < 18 && !loading ? (
     <button
       className="button button__main button__long"
-      onClick={() => fetchMoreCharacters()}
+      onClick={fetchMoreCharacters}
     >
       <div className="inner">load more</div>
     </button>
@@ -77,16 +81,16 @@ const CharList = props => {
   }, []);
 
   const content =
-    !error && !loading ? (
+    loading && !initialFetch ? (
+      <CardsSkeleton />
+    ) : !error ? (
       <CharacterCardsList
         charactersList={charactersList}
         onCharacterUpdate={props.onCharacterUpdate}
       />
-    ) : !error && loading && !initialFetch ? (
-      <CardsSkeleton />
-    ) : (
+    ) : error ? (
       <ErrorMessage />
-    );
+    ) : null;
 
   return (
     <div className="char__list">
