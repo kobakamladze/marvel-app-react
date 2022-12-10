@@ -1,7 +1,6 @@
 import { useState, useEffect } from 'react';
 import useMarvelService from '../../services/MarvelService';
 
-import useComponentCondition from '../../hooks/componentConditionHook';
 import ErrorMessage from '../errorMessage/errorMessage';
 import Spinner from '../spinner/spinner';
 import { Skeleton } from '@mui/material';
@@ -138,14 +137,13 @@ const CharList = props => {
       <Spinner styleHeight={{ height: '80px' }} />
     ) : null;
 
-  const loadingElem = loading ? <CardsSkeleton /> : null;
   const content =
     !error && !loading ? (
       <ul className="char__grid">{cards}</ul>
     ) : error && !loading ? (
       <ErrorMessage />
     ) : (
-      CardsSkeleton
+      <CardsSkeleton />
     );
 
   return (

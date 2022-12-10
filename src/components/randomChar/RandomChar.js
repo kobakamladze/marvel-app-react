@@ -84,8 +84,6 @@ const RandomChar = () => {
             charWikiPage,
           },
         }));
-
-        componentCondition.stopLoading();
       })
       .finally(() => {});
   };
@@ -93,9 +91,10 @@ const RandomChar = () => {
   // Updating random character immediately when component is mounted
   useEffect(() => {
     async function fetchData() {
-      const response = await updateRandomChar();
+      return await updateRandomChar();
     }
     fetchData();
+    // eslint-disable-next-line
   }, []);
 
   const errorElem = error ? <ErrorMessage /> : null;

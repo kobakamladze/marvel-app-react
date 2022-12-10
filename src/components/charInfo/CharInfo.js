@@ -3,7 +3,6 @@ import { useEffect, useState } from 'react';
 
 import useMarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/errorMessage';
-import useComponentCondition from '../../hooks/componentConditionHook';
 
 import './charInfo.scss';
 
@@ -118,15 +117,15 @@ const CharInfo = props => {
     // eslint-disable-next-line
   }, [props.characterId]);
 
-  const loadingElem = loading && !error ? characterInfoLoadingSkeleton : null;
-  const errorElem = error ? <ErrorMessage /> : null;
+  // const loadingElem = loading && !error ? characterInfoLoadingSkeleton : null;
+  // const errorElem = error ? <ErrorMessage /> : null;
   const content =
     !loading && !error && chosenCharacter ? (
       <>
         <BasicCharacterInfo data={chosenCharacter} />
         <ComicsList comicsList={chosenCharacter.comics} />
       </>
-    ) : errorValue ? (
+    ) : error ? (
       <ErrorMessage />
     ) : (
       characterInfoLoadingSkeleton
