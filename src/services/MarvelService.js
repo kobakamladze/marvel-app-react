@@ -1,103 +1,111 @@
-import axios from 'axios';
+import useHttp from '../hooks/http.hooks';
 
-// Max CharId = 1011500
-// Min CharId = 1010801
-// Generates random number in range of (1010801, 1011500) for character ID
-function generateRandomCharId() {
-  const min = 1010801;
-  const max = 1011500;
-  return Math.floor(Math.random() * (max - min) + min);
-}
+// class MarvelService {
+//   _domain = 'https://gateway.marvel.com:443';
+//   _apkikey = 'apikey=f3efb51bf799f47e431a63c43ee818ae';
 
-class MarvelService {
-  _domain = 'https://gateway.marvel.com:443';
-  _apkikey = 'apikey=f3efb51bf799f47e431a63c43ee818ae';
+//   fetchMarvelData = (url, limit, offset = 0) => {
+//     let extraParams = '';
+//     if (limit) {
+//       extraParams = `&offset=${offset}&limit=${limit}`;
+//     }
 
-  fetchMarvelData = (url, limit, offset = 0) => {
+//     return axios
+//       .get(`${this._domain}/${url}?${this._apkikey}${extraParams}`)
+//       .then(({ data: response }) => response)
+//       .catch(e => e)
+//       .finally();
+//   };
+
+//   fetchCharacters = ({ limit = 9, offset }) =>
+//     this.fetchMarvelData(`v1/public/characters`, limit, offset).then(
+//       response => {
+//         const responseWithFilteredProps = response.data.results.map(
+//           ({
+//             name,
+//             id,
+//             description,
+//             thumbnail: { path, extension },
+//             urls: [{ url: charHomePage }, { url: charWikiPage }],
+//           }) => ({
+//             name,
+//             id,
+//             description,
+//             thumbnail: { path, extension },
+//             urls: [{ url: charHomePage }, { url: charWikiPage }],
+//             condition: { selected: false },
+//           })
+//         );
+
+//         return responseWithFilteredProps;
+//       }
+//     );
+
+//   fetchPreciseCharacter = id =>
+//     this.fetchMarvelData(`v1/public/characters/${id}`).then(response => {
+//       const {
+//         name,
+//         id,
+//         description,
+//         thumbnail: { path, extension },
+//         urls: [{ url: charHomePage }, { url: charWikiPage }],
+//         comics: { items: comics },
+//       } = response.data.results[0];
+
+//       return {
+//         name,
+//         id,
+//         description,
+//         thumbnail: `${path}.${extension}`,
+//         urls: { charHomePage, charWikiPage },
+//         comics,
+//       };
+//     });
+// }
+
+const useMarvelService = () => {
+  const { loading, error, request, clearError } = useHttp();
+
+  const _domain = 'https://gateway.marvel.com:443';
+  const _apkikey = 'apikey=f3efb51bf799f47e431a63c43ee818ae';
+
+  const fetchCharacters = ({ limit = 9, offset }) => {
     let extraParams = '';
     if (limit) {
       extraParams = `&offset=${offset}&limit=${limit}`;
     }
 
-    return axios
-      .get(`${this._domain}/${url}?${this._apkikey}${extraParams}`)
-      .then(({ data: response }) => response)
-      .catch(e => e)
-      .finally();
+    return request(
+      `${_domain}/v1/public/characters?${_apkikey}${extraParams}`,
+      limit,
+      offset
+    )
+      .then(response => response.results.map(_transformCharacter))
+      .catch(e => Promise.reject(e))
+      .finally(() => clearError);
   };
 
-  fetchCharacters = ({ limit = 9, offset }) =>
-    this.fetchMarvelData(`v1/public/characters`, limit, offset).then(
-      response => {
-        const responseWithFilteredProps = response.data.results.map(
-          ({
-            name,
-            id,
-            description,
-            thumbnail: { path, extension },
-            urls: [{ url: charHomePage }, { url: charWikiPage }],
-          }) => ({
-            name,
-            id,
-            description,
-            thumbnail: { path, extension },
-            urls: [{ url: charHomePage }, { url: charWikiPage }],
-            condition: { selected: false },
-          })
-        );
+  const fetchPreciseCharacter = id =>
+    request(`${_domain}/v1/public/characters/${id}?${_apkikey}`)
+      .then(response => _transformCharacter(response.results[0]))
+      .catch(e => Promise.reject(e))
+      .finally(() => {});
 
-        return responseWithFilteredProps;
-      }
-    );
+  const _transformCharacter = character => ({
+    name: character.name,
+    id: character.id,
+    description: character.description,
+    thumbnail: `${character.thumbnail.path}.${character.thumbnail.extension}`,
+    urls: {
+      charHomePage: character.urls[0].url,
+      charWikiPage: character.urls[1].url,
+    },
+    comics: character.comics.items,
+    // property for characters list
+    condition: { selected: false },
+  });
 
-  fetchRandomCharacter = () => {
-    const characterId = generateRandomCharId();
+  return { loading, error, clearError, fetchCharacters, fetchPreciseCharacter };
+};
 
-    return this.fetchMarvelData(`v1/public/characters/${characterId}`).then(
-      response => {
-        if (response.status !== 'Ok') return Promise.resolve({ error: true });
-
-        if (response.data.results.length) {
-          const {
-            name,
-            description,
-            thumbnail: { path, extension },
-            urls: [{ url: charHomePage }, { url: charWikiPage }],
-          } = response.data.results[0];
-
-          return {
-            name,
-            description,
-            thumbnail: `${path}.${extension}`,
-            homePageUrl: charHomePage,
-            wikiUrl: charWikiPage,
-          };
-        }
-      }
-    );
-  };
-
-  fetchPreciseCharacter = (id = generateRandomCharId()) => {
-    return this.fetchMarvelData(`v1/public/characters/${id}`).then(response => {
-      const {
-        name,
-        id,
-        description,
-        thumbnail: { path, extension },
-        urls: [{ url: charHomePage }, { url: charWikiPage }],
-        comics: { items: comics },
-      } = response.data.results[0];
-
-      return {
-        name,
-        id,
-        description,
-        thumbnail: `${path}.${extension}`,
-        urls: { charHomePage, charWikiPage },
-        comics,
-      };
-    });
-  };
-}
-
-export default MarvelService;
+export default useMarvelService;

@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 
 import ErrorMessage from '../errorMessage/errorMessage';
 import Spinner from '../spinner/spinner';
@@ -11,18 +11,17 @@ import './charList.scss';
 function CharacterCard(props) {
   const {
     name,
-    thumbnail: { path, extension },
+    thumbnail,
     condition: { selected },
     onCharacterUpdate,
   } = props;
 
-  const imageSrc = `${path}.${extension}`;
   const selectedClassName = selected ? 'char__item_selected' : null;
 
   return (
     <>
       <li className="char__item" onClick={onCharacterUpdate}>
-        <img src={imageSrc} alt="abyss" />
+        <img src={thumbnail} alt="abyss" />
         <div className={`char__name ${selectedClassName}`}>{name}</div>
       </li>
     </>
@@ -95,48 +94,35 @@ function LoadMoreButton(props) {
 const randomOffset = Math.floor(Math.random() * (501 - 1) + 1);
 
 // Class for fetching data
-const marvelService = new MarvelService();
 
 // Main funciton component
 const CharList = props => {
+  const { fetchCharacters, loading, error } = useMarvelService();
+
   // States
   const [charactersList, setCharactersList] = useState([]);
   const [queryParams, setQueryParams] = useState({
     limit: 9,
     offset: randomOffset + 210,
   });
-  const [stage, setStage] = useState({ error: false, loading: true });
-  const [loadMoreButton, setLoadMoreButton] = useState({ loading: true });
 
   // States managment
-  const onError = () => setStage({ error: true, loading: false });
-  const onLoading = () => setStage({ error: false, loading: true });
-  const buttonOnLoading = () =>
-    setLoadMoreButton({
-      loading: true,
-    });
 
   // Fetching characters for list (by default 9)
   const fetchMoreCharacters = () => {
-    buttonOnLoading();
-
-    return marvelService
-      .fetchCharacters(queryParams)
+    return fetchCharacters(queryParams)
       .then(response => {
         setCharactersList(charactersList => [...charactersList, ...response]);
         setQueryParams(queryParams => ({
           ...queryParams,
           offset: queryParams.offset + 9,
         }));
-        setStage({ error: false, loading: false });
-        setLoadMoreButton({ loading: false });
       })
-      .catch(() => onError());
+      .catch(() => {});
   };
 
   // Fetching characters immediately when component is mounted
   useEffect(() => {
-    onLoading();
     async function fetchData() {
       return await fetchMoreCharacters();
     }
@@ -156,21 +142,25 @@ const CharList = props => {
     />
   ));
 
+  // Load more button render by loading status
   const loadMoreButtonCondition =
-    charactersList.length < 18 ? (
-      <LoadMoreButton
-        fetchMoreCharacters={fetchMoreCharacters}
-        isLoading={loadMoreButton.loading}
-      />
+    charactersList.length < 18 && !loading ? (
+      <button
+        className="button button__main button__long"
+        onClick={() => fetchMoreCharacters()}
+      >
+        <div className="inner">load more</div>
+      </button>
+    ) : loading ? (
+      <Spinner styleHeight={{ height: '80px' }} />
     ) : null;
 
-  const errorElem = stage.error ? <ErrorMessage /> : null;
-  const loadingElem = stage.loading ? <CardsSkeleton /> : null;
+  const loadingElem = loading ? <CardsSkeleton /> : null;
   const content =
-    !stage.error && !stage.loading ? (
+    !error && !loading ? (
       <ul className="char__grid">{cards}</ul>
-    ) : stage.error && !stage.loading ? (
-      errorElem
+    ) : error && !loading ? (
+      <ErrorMessage />
     ) : (
       loadingElem
     );

@@ -1,7 +1,7 @@
 import { Skeleton } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/errorMessage';
 
 import './charInfo.scss';
@@ -81,42 +81,27 @@ const characterInfoLoadingSkeleton = (
   </>
 );
 
-// Class for fetching data
-const marvelService = new MarvelService();
-
 // Main function component
 const CharInfo = props => {
   // State
   const [chosenCharacter, setChosenCharacter] = useState(null);
-  const [stage, setStage] = useState({ error: false, loading: true });
+
+  const { fetchPreciseCharacter, loading, error } = useMarvelService();
 
   // State managment
-  const onError = () => setStage({ error: true, loading: false });
-  const onLoading = () => setStage({ error: false, loading: true });
   const onNewCharacterId = newCharacter => setChosenCharacter(newCharacter);
 
   // Update character
   const updateCharacterInfo = () => {
-    // Show loading template
-    onLoading();
-
-    const { characterId } = props;
-    if (!characterId) {
+    if (!props.characterId) {
       return;
     }
 
     // Fetch clicked character, store it into state and stop loading
     // also call onError function if error occures
-    return marvelService
-      .fetchPreciseCharacter(props.characterId)
-      .then(response => {
-        onNewCharacterId(response);
-        setStage({
-          error: false,
-          loading: false,
-        });
-      })
-      .catch(() => onError());
+    return fetchPreciseCharacter(props.characterId)
+      .then(response => onNewCharacterId(response))
+      .catch(() => {});
   };
 
   // Updating character when component is mounted to display its info
@@ -132,11 +117,10 @@ const CharInfo = props => {
     // eslint-disable-next-line
   }, [props.characterId]);
 
-  const loadingElem =
-    stage.loading && !stage.error ? characterInfoLoadingSkeleton : null;
-  const errorElem = stage.error ? <ErrorMessage /> : null;
+  const loadingElem = loading && !error ? characterInfoLoadingSkeleton : null;
+  const errorElem = error ? <ErrorMessage /> : null;
   const content =
-    !stage.loading && !stage.error && chosenCharacter ? (
+    !loading && !error && chosenCharacter ? (
       <>
         <BasicCharacterInfo data={chosenCharacter} />
         <ComicsList comicsList={chosenCharacter.comics} />
