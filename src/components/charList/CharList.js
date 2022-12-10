@@ -72,24 +72,6 @@ function CardsSkeleton() {
   );
 }
 
-// Button
-function LoadMoreButton(props) {
-  if (props.isLoading)
-    return (
-      <div>
-        <Spinner styleHeight={{ height: '80px' }} />
-      </div>
-    );
-  return (
-    <button
-      className="button button__main button__long"
-      onClick={() => props.fetchMoreCharacters()}
-    >
-      <div className="inner">load more</div>
-    </button>
-  );
-}
-
 // Generating random offset
 const randomOffset = Math.floor(Math.random() * (501 - 1) + 1);
 
