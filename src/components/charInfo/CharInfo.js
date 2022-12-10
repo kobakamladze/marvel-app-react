@@ -1,7 +1,7 @@
 import { Skeleton } from '@mui/material';
 import { useEffect, useState } from 'react';
 
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/errorMessage';
 import useComponentCondition from '../../hooks/componentConditionHook';
 
@@ -82,38 +82,32 @@ const characterInfoLoadingSkeleton = (
   </>
 );
 
-// Class for fetching data
-const marvelService = new MarvelService();
-
 // Main function component
 const CharInfo = props => {
   // State
   const [chosenCharacter, setChosenCharacter] = useState(null);
-  const componentCondition = useComponentCondition();
+
+  const { fetchPreciseCharacter, loading, error } = useMarvelService();
 
   // State managment
   const onNewCharacterId = newCharacter => setChosenCharacter(newCharacter);
 
   // Update character
   const updateCharacterInfo = () => {
-    // Show loading template
-    componentCondition.startLoading();
-
-    const { characterId } = props;
-    if (!characterId) {
+    if (!props.characterId) {
       return;
     }
 
     // Fetch clicked character, store it into state and stop loading
     // also call onError function if error occures
-    return marvelService
-      .fetchPreciseCharacter(props.characterId)
-      .then(response => {
-        onNewCharacterId(response);
-        componentCondition.stopLoading();
-      })
-      .catch(() => componentCondition.onErrorSet());
+    return fetchPreciseCharacter(props.characterId)
+      .then(response => onNewCharacterId(response))
+      .catch(() => {});
   };
+
+  // Updating character when component is mounted to display its info
+  // eslint-disable-next-line
+  useEffect(() => updateCharacterInfo, []);
 
   // Updating character to display its info
   useEffect(() => {
@@ -121,13 +115,13 @@ const CharInfo = props => {
       return await updateCharacterInfo();
     }
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, [props.characterId]);
 
-  const { loadingValue, errorValue } = componentCondition;
-
+  const loadingElem = loading && !error ? characterInfoLoadingSkeleton : null;
+  const errorElem = error ? <ErrorMessage /> : null;
   const content =
-    !loadingValue && !errorValue && chosenCharacter ? (
+    !loading && !error && chosenCharacter ? (
       <>
         <BasicCharacterInfo data={chosenCharacter} />
         <ComicsList comicsList={chosenCharacter.comics} />

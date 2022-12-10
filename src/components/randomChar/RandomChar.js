@@ -5,17 +5,16 @@ import mjolnir from '../../resources/img/mjolnir.png';
 import ErrorMessage from '../errorMessage/errorMessage';
 import Spinner from '../spinner/spinner';
 
-import MarvelService from '../../services/MarvelService';
-import useComponentCondition from '../../hooks/componentConditionHook';
+import useMarvelService from '../../services/MarvelService';
 
 // Characters
-function CharacterStateRender({ characterData }) {
+function CharacterStateRender(response) {
   const {
     name,
     description,
     thumbnail,
     urls: { charHomePage, charWikiPage },
-  } = characterData;
+  } = response.characterData;
 
   return (
     <div className="randomchar__block">
@@ -48,27 +47,33 @@ function descriptionViewManament(description) {
   return `${paragraph}...`;
 }
 
-const RandomChar = props => {
-  const [character, setCharacter] = useState({});
-  const componentCondition = useComponentCondition();
+// Max CharId = 1011500
+// Min CharId = 1010801
+// Generates random number in range of (1010801, 1011500) for character ID
+function generateRandomCharId() {
+  const min = 1010801;
+  const max = 1011500;
+  return Math.floor(Math.random() * (max - min) + min);
+}
 
-  const marvelService = new MarvelService();
+const RandomChar = () => {
+  const [character, setCharacter] = useState({});
+  const { fetchPreciseCharacter, loading, error, clearError } =
+    useMarvelService();
 
   // Updating random character
   const updateRandomChar = () => {
-    componentCondition.startLoading();
-    return marvelService
-      .fetchRandomCharacter()
+    clearError();
+    return fetchPreciseCharacter(generateRandomCharId())
       .then(response => {
         const {
           name,
           description,
           thumbnail,
-          homePageUrl: charHomePage,
-          wikiUrl: charWikiPage,
+          urls: { charHomePage, charWikiPage },
         } = response;
 
-        setCharacter(() => ({
+        return setCharacter(() => ({
           name,
           description: description
             ? descriptionViewManament(description)
@@ -82,32 +87,29 @@ const RandomChar = props => {
 
         componentCondition.stopLoading();
       })
-      .catch(() => componentCondition.onErrorSet());
+      .finally(() => {});
   };
 
   // Updating random character immediately when component is mounted
   useEffect(() => {
     async function fetchData() {
-      return await updateRandomChar();
+      const response = await updateRandomChar();
     }
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  const { loadingValue, errorValue } = componentCondition;
-
-  const content =
-    !loadingValue && !errorValue ? (
+  const errorElem = error ? <ErrorMessage /> : null;
+  const loadingElem = loading ? <Spinner /> : null;
+  const characterView =
+    !loading && !error ? (
       <CharacterStateRender characterData={character} />
-    ) : !errorValue && loadingValue ? (
-      <Spinner />
-    ) : (
-      <ErrorMessage />
-    );
+    ) : null;
+  const randomCharContent = characterView || loadingElem || errorElem;
 
   return (
     <div className="randomchar">
-      {content}
+      {randomCharContent}
+
       <div className="randomchar__static">
         <p className="randomchar__title">
           Random character for today!

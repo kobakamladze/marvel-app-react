@@ -1,5 +1,5 @@
 import { useState, useEffect } from 'react';
-import MarvelService from '../../services/MarvelService';
+import useMarvelService from '../../services/MarvelService';
 
 import useComponentCondition from '../../hooks/componentConditionHook';
 import ErrorMessage from '../errorMessage/errorMessage';
@@ -12,18 +12,17 @@ import './charList.scss';
 function CharacterCard(props) {
   const {
     name,
-    thumbnail: { path, extension },
+    thumbnail,
     condition: { selected },
     onCharacterUpdate,
   } = props;
 
-  const imageSrc = `${path}.${extension}`;
   const selectedClassName = selected ? 'char__item_selected' : null;
 
   return (
     <>
       <li className="char__item" onClick={onCharacterUpdate}>
-        <img src={imageSrc} alt="abyss" />
+        <img src={thumbnail} alt="abyss" />
         <div className={`char__name ${selectedClassName}`}>{name}</div>
       </li>
     </>
@@ -74,74 +73,44 @@ function CardsSkeleton() {
   );
 }
 
-// Button
-function LoadMoreButton(props) {
-  if (props.isLoading)
-    return (
-      <div>
-        <Spinner styleHeight={{ height: '80px' }} />
-      </div>
-    );
-  return (
-    <button
-      className="button button__main button__long"
-      onClick={() => props.fetchMoreCharacters()}
-    >
-      <div className="inner">load more</div>
-    </button>
-  );
-}
-
 // Generating random offset
 const randomOffset = Math.floor(Math.random() * (501 - 1) + 1);
 
 // Class for fetching data
-const marvelService = new MarvelService();
 
 // Main funciton component
 const CharList = props => {
+  const { fetchCharacters, loading, error } = useMarvelService();
+
   // States
   const [charactersList, setCharactersList] = useState([]);
   const [queryParams, setQueryParams] = useState({
     limit: 9,
     offset: randomOffset + 210,
   });
-  const [loadMoreButton, setLoadMoreButton] = useState({ loading: true });
 
-  const componentCondition = useComponentCondition();
-
-  // Load more butto condition managment
-  const buttonOnLoading = () =>
-    setLoadMoreButton({
-      loading: true,
-    });
+  // States managment
 
   // Fetching characters for list (by default 9)
   const fetchMoreCharacters = () => {
-    buttonOnLoading();
-
-    return marvelService
-      .fetchCharacters(queryParams)
+    return fetchCharacters(queryParams)
       .then(response => {
         setCharactersList(charactersList => [...charactersList, ...response]);
         setQueryParams(queryParams => ({
           ...queryParams,
           offset: queryParams.offset + 9,
         }));
-        componentCondition.stopLoading();
-        setLoadMoreButton({ loading: false });
       })
-      .catch(() => componentCondition.onErrorSet());
+      .catch(() => {});
   };
 
-  // Fetching characters immediately when components is mounted
+  // Fetching characters immediately when component is mounted
   useEffect(() => {
-    componentCondition.startLoading();
     async function fetchData() {
       return await fetchMoreCharacters();
     }
     fetchData();
-    // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line
   }, []);
 
   //Creating cards of characrters for list
@@ -156,20 +125,24 @@ const CharList = props => {
     />
   ));
 
+  // Load more button render by loading status
   const loadMoreButtonCondition =
-    charactersList.length < 18 ? (
-      <LoadMoreButton
-        fetchMoreCharacters={fetchMoreCharacters}
-        isLoading={loadMoreButton.loading}
-      />
+    charactersList.length < 18 && !loading ? (
+      <button
+        className="button button__main button__long"
+        onClick={() => fetchMoreCharacters()}
+      >
+        <div className="inner">load more</div>
+      </button>
+    ) : loading ? (
+      <Spinner styleHeight={{ height: '80px' }} />
     ) : null;
 
-  const { loadingValue, errorValue } = componentCondition;
-
+  const loadingElem = loading ? <CardsSkeleton /> : null;
   const content =
-    !errorValue && !loadingValue ? (
+    !error && !loading ? (
       <ul className="char__grid">{cards}</ul>
-    ) : errorValue && !loadingValue ? (
+    ) : error && !loading ? (
       <ErrorMessage />
     ) : (
       CardsSkeleton
