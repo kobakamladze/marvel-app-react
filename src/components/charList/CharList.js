@@ -10,9 +10,13 @@ import './charList.scss';
 // Cards skeleton
 const CardsSkeleton = () => {
   const customSkeleton = (
-    <Skeleton variant="rectangular" animation="wave" width={225} height={345} />
+    <Skeleton variant="rectangular" animation="wave" width={200} height={318} />
   );
-  return <div className="char__grid">{Array(6).fill(customSkeleton)}</div>;
+  return (
+    <div className="char__grid">
+      <ul className="char__grid">{Array(6).fill(customSkeleton)}</ul>
+    </div>
+  );
 };
 
 // Card

@@ -30,7 +30,22 @@ const ComicsListContent = ({ comicsList }) => {
 // Comic cards skeletton
 const CardsSkeleton = () => {
   const customSkeleton = Array(8).fill(
-    <Skeleton variant="rectangular" animation="wave" width={230} height={348} />
+    <dic className="comics__item">
+      <Skeleton
+        variant="rectangular"
+        animation="wave"
+        width={225}
+        height={345}
+      />
+      <div style={{ marginTop: 10 }}>
+        <Skeleton
+          variant="rectangular"
+          animation="wave"
+          width={225}
+          height={15}
+        />
+      </div>
+    </dic>
   );
 
   return <ul className="comics__grid">{customSkeleton}</ul>;
