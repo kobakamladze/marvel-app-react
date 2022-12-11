@@ -1,7 +1,7 @@
 import { useState, useEffect } from 'react';
 import useMarvelService from '../../services/MarvelService';
 
-import ErrorMessage from '../errorMessage/errorMessage';
+import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/spinner';
 import { Skeleton } from '@mui/material';
 

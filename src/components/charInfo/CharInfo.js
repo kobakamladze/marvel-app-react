@@ -2,7 +2,7 @@ import { Skeleton } from '@mui/material';
 import { useEffect, useState } from 'react';
 
 import useMarvelService from '../../services/MarvelService';
-import ErrorMessage from '../errorMessage/errorMessage';
+import ErrorMessage from '../errorMessage/ErrorMessage';
 
 import './charInfo.scss';
 
@@ -66,25 +66,44 @@ function ComicsList({ comicsList }) {
 }
 
 // Skeleton for loading
-const characterInfoLoadingSkeleton = (
-  <>
-    <Skeleton variant="circular" width={80} height={80} animation="wave" />
-    <Skeleton
-      style={{ margin: '15px 0' }}
-      variant="rectangular"
-      height={150}
-      animation="wave"
-    />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-    <Skeleton animation="wave" />
-  </>
-);
+const CharacterInfoLoadingSkeleton = ({ initialTitle }) => {
+  const title = initialTitle ? (
+    <p
+      style={{
+        fontWeight: 'bold',
+        fontSize: '18px',
+        textAlign: 'center',
+        margin: '5px 0 10px',
+      }}
+    >
+      {initialTitle}
+    </p>
+  ) : null;
+
+  return (
+    <>
+      {title}
+      <Skeleton variant="circular" width={80} height={80} animation="wave" />
+      <Skeleton
+        style={{ margin: '15px 0' }}
+        variant="rectangular"
+        height={150}
+        animation="wave"
+      />
+      <Skeleton animation="wave" />
+      <Skeleton animation="wave" />
+      <Skeleton animation="wave" />
+    </>
+  );
+};
 
 // Main function component
 const CharInfo = props => {
   // State
   const [chosenCharacter, setChosenCharacter] = useState(null);
+  const [initialTitle, setInitialTitle] = useState(
+    'Choose character from list on the left'
+  );
 
   const { fetchSingleCharacter, loading, error } = useMarvelService();
 
@@ -100,7 +119,10 @@ const CharInfo = props => {
     // Fetch clicked character, store it into state and stop loading
     // also call onError function if error occures
     return fetchSingleCharacter(props.characterId)
-      .then(response => onNewCharacterId(response))
+      .then(response => {
+        setInitialTitle(null);
+        return onNewCharacterId(response);
+      })
       .catch(() => {});
   };
 
@@ -117,8 +139,6 @@ const CharInfo = props => {
     // eslint-disable-next-line
   }, [props.characterId]);
 
-  // const loadingElem = loading && !error ? characterInfoLoadingSkeleton : null;
-  // const errorElem = error ? <ErrorMessage /> : null;
   const content =
     !loading && !error && chosenCharacter ? (
       <>
@@ -128,7 +148,7 @@ const CharInfo = props => {
     ) : error ? (
       <ErrorMessage />
     ) : (
-      characterInfoLoadingSkeleton
+      <CharacterInfoLoadingSkeleton initialTitle={initialTitle} />
     );
 
   return <div className="char__info">{content}</div>;

@@ -5,8 +5,7 @@ import { Link } from 'react-router-dom';
 import { Skeleton } from '@mui/material';
 
 import useMarvelService from '../../services/MarvelService';
-import SingleComic from '../singleComic/SingleComic';
-import ErrorMessage from '../errorMessage/errorMessage';
+import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/spinner';
 
 // Comic card
@@ -101,9 +100,6 @@ const ComicsList = () => {
         fetchMoreComics={fetchMoreComics}
         loading={loading}
       />
-
-      {/* TO DELETE */}
-      <SingleComic />
     </div>
   );
 };
