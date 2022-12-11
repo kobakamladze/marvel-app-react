@@ -4,16 +4,17 @@ import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@mui/material';
 
-import SingleComic from '../singleComic/SingleComic';
-import Spinner from '../spinner/spinner';
 import useMarvelService from '../../services/MarvelService';
+import SingleComic from '../singleComic/SingleComic';
+import ErrorMessage from '../errorMessage/errorMessage';
+import Spinner from '../spinner/spinner';
 
 // Comic card
 const Comic = ({ comicsList }) => {
   return (
     <>
-      {comicsList.map(({ id, title, thumbnail, price }) => (
-        <li className="comics__item" key={id}>
+      {comicsList.map(({ id, title, thumbnail, price }, i) => (
+        <li className="comics__item" key={i}>
           <Link to="#">
             <img src={thumbnail} alt={title} className="comics__item-img" />
             <div className="comics__item-name">{title}</div>
@@ -30,7 +31,7 @@ const Comic = ({ comicsList }) => {
 // Comic cards skeletton
 const CardsSkeleton = () => {
   const customSkeleton = (
-    <Skeleton variant="rectangular" animation="wave" width={200} height={318} />
+    <Skeleton variant="rectangular" animation="wave" width={230} height={348} />
   );
 
   return Array(8).fill(customSkeleton);
@@ -38,7 +39,7 @@ const CardsSkeleton = () => {
 
 // Load more button component
 const LoadMoreButton = ({ comicsList, loading, fetchMoreComics }) => {
-  return comicsList.length < 18 && !loading ? (
+  return comicsList.length < 30 && !loading ? (
     <button
       className="button button__main button__long"
       onClick={fetchMoreComics}
@@ -61,7 +62,7 @@ const ComicsList = () => {
 
   const { loading, error, clearError, fetchComics } = useMarvelService();
 
-  const fetchComicsForList = () => {
+  const fetchMoreComics = () => {
     clearError();
     return fetchComics({ limit: 8, offset })
       .then(response =>
@@ -76,7 +77,7 @@ const ComicsList = () => {
 
   useEffect(() => {
     async function fetchData() {
-      return await fetchComicsForList();
+      return await fetchMoreComics();
     }
     fetchData();
     // eslint-disable-next-line
@@ -85,6 +86,8 @@ const ComicsList = () => {
   const content =
     loading && !initialFetch ? (
       <CardsSkeleton />
+    ) : error ? (
+      <ErrorMessage />
     ) : (
       <Comic comicsList={comicsList} />
     );
@@ -92,12 +95,12 @@ const ComicsList = () => {
   return (
     <div className="comics__list">
       <ul className="comics__grid">{content}</ul>
-      <button
-        className="button button__main button__long"
-        onClick={fetchComicsForList}
-      >
-        <div className="inner">load more</div>
-      </button>
+
+      <LoadMoreButton
+        comicsList={comicsList}
+        fetchMoreComics={fetchMoreComics}
+        loading={loading}
+      />
 
       {/* TO DELETE */}
       <SingleComic />

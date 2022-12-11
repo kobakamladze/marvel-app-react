@@ -18,20 +18,22 @@ const CardsSkeleton = () => {
 // Card
 const CharacterCardsList = ({ charactersList, onCharacterUpdate }) => (
   <ul className="char__grid">
-    {charactersList.map(({ name, id, thumbnail, condition: { selected } }) => {
-      const selectedClassName = selected ? 'char__item_selected' : null;
+    {charactersList.map(
+      ({ name, id, thumbnail, condition: { selected } }, i) => {
+        const selectedClassName = selected ? 'char__item_selected' : null;
 
-      return (
-        <li
-          key={id}
-          className="char__item"
-          onClick={() => onCharacterUpdate(id)}
-        >
-          <img src={thumbnail} alt="abyss" />
-          <div className={`char__name ${selectedClassName}`}>{name}</div>
-        </li>
-      );
-    })}
+        return (
+          <li
+            key={i}
+            className="char__item"
+            onClick={() => onCharacterUpdate(id)}
+          >
+            <img src={thumbnail} alt="abyss" />
+            <div className={`char__name ${selectedClassName}`}>{name}</div>
+          </li>
+        );
+      }
+    )}
   </ul>
 );
 
