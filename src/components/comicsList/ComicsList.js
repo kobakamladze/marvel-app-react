@@ -9,12 +9,12 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/spinner';
 
 // Comic card
-const Comic = ({ comicsList }) => {
+const ComicsListContent = ({ comicsList }) => {
   return (
-    <>
+    <ul className="comics__grid">
       {comicsList.map(({ id, title, thumbnail, price }, i) => (
         <li className="comics__item" key={i}>
-          <Link to="#">
+          <Link to={`/comic/${id}`}>
             <img src={thumbnail} alt={title} className="comics__item-img" />
             <div className="comics__item-name">{title}</div>
             <div className="comics__item-price">
@@ -23,17 +23,17 @@ const Comic = ({ comicsList }) => {
           </Link>
         </li>
       ))}
-    </>
+    </ul>
   );
 };
 
 // Comic cards skeletton
 const CardsSkeleton = () => {
-  const customSkeleton = (
+  const customSkeleton = Array(8).fill(
     <Skeleton variant="rectangular" animation="wave" width={230} height={348} />
   );
 
-  return Array(8).fill(customSkeleton);
+  return <ul className="comics__grid">{customSkeleton}</ul>;
 };
 
 // Load more button component
@@ -71,7 +71,10 @@ const ComicsList = () => {
         setOffset(prevOffset => prevOffset + 8);
         setInitialFetch(() => true);
       })
-      .catch(() => {});
+      .catch(e => {
+        throw e;
+      })
+      .finally();
   };
 
   useEffect(() => {
@@ -88,13 +91,12 @@ const ComicsList = () => {
     ) : error ? (
       <ErrorMessage />
     ) : (
-      <Comic comicsList={comicsList} />
+      <ComicsListContent comicsList={comicsList} />
     );
 
   return (
     <div className="comics__list">
-      <ul className="comics__grid">{content}</ul>
-
+      {content}
       <LoadMoreButton
         comicsList={comicsList}
         fetchMoreComics={fetchMoreComics}

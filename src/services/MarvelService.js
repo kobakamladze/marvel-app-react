@@ -44,9 +44,13 @@ const useMarvelService = () => {
       .then(response => response.results.map(_transformComic))
       .catch(e => Promise.reject(e))
       .finally(() => clearError);
-
-    // response.results.map(_transformCharacter)
   };
+
+  const fetchSingleComic = id =>
+    request(`${_domain}/v1/public/comics/${id}?${_apkikey}`)
+      .then(response => _transformComic(response.results[0]))
+      .catch(e => Promise.reject(e))
+      .finally(() => clearError);
 
   // Transforming character
   const _transformCharacter = character => ({
@@ -67,6 +71,10 @@ const useMarvelService = () => {
     id: comic.id,
     title: comic.title,
     description: comic.description,
+    pageCount: comic.pageCount,
+    languages: comic.textObjetcs
+      ? comic.textObjetcs.map(({ language }) => language)
+      : ['en-us'],
     thumbnail: `${comic.thumbnail.path}.${comic.thumbnail.extension}`,
     price: comic.prices[0].price,
   });
@@ -78,6 +86,7 @@ const useMarvelService = () => {
     fetchCharacters,
     fetchSingleCharacter,
     fetchComics,
+    fetchSingleComic,
   };
 };
 

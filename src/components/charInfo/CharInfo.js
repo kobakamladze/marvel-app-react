@@ -123,7 +123,10 @@ const CharInfo = props => {
         setInitialTitle(null);
         return onNewCharacterId(response);
       })
-      .catch(() => {});
+      .catch(e => {
+        throw e;
+      })
+      .finally();
   };
 
   // Updating character when component is mounted to display its info

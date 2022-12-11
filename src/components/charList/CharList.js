@@ -10,7 +10,7 @@ import './charList.scss';
 // Cards skeleton
 const CardsSkeleton = () => {
   const customSkeleton = (
-    <Skeleton variant="rectangular" animation="wave" width={200} height={318} />
+    <Skeleton variant="rectangular" animation="wave" width={225} height={345} />
   );
   return <div className="char__grid">{Array(6).fill(customSkeleton)}</div>;
 };
@@ -71,7 +71,10 @@ const CharList = props => {
         setOffset(prevOffset => prevOffset + 9);
         setInitialFetch(() => true);
       })
-      .catch(() => {});
+      .catch(e => {
+        throw e;
+      })
+      .finally();
 
   // Fetching characters immediately when component is mounted
   useEffect(() => {
