@@ -1,5 +1,4 @@
 import './singleComic.scss';
-import xMen from '../../resources/img/x-men.png';
 import { Link, useParams } from 'react-router-dom';
 import useMarvelService from '../../services/MarvelService';
 import { useEffect, useState } from 'react';
@@ -73,6 +72,7 @@ const SingleComic = () => {
       return await fetchComic();
     }
     fetchData();
+    // eslint-disable-next-line
   }, []);
 
   return comic && !loading && !error ? (

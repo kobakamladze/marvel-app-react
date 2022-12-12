@@ -1,5 +1,6 @@
 import { Skeleton } from '@mui/material';
 import { useEffect, useState } from 'react';
+import { Link } from 'react-router-dom';
 
 import useMarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/ErrorMessage';
@@ -54,11 +55,14 @@ function ComicsList({ comicsList }) {
       <div className="char__comics">Comics:</div>
       <ul className="char__comics-list">
         {comicsList.length
-          ? comicsList.splice(0, 10).map(({ name, resourceURI }, i) => (
-              <li className="char__comics-item" key={i}>
-                <a href={resourceURI}>{name}</a>
-              </li>
-            ))
+          ? comicsList.splice(0, 10).map(({ name, resourceURI }) => {
+              const comicId = resourceURI.split('/').at(-1);
+              return (
+                <li className="char__comics-item" key={comicId}>
+                  <Link to={`/comic/${comicId}`}>{name}</Link>
+                </li>
+              );
+            })
           : 'No comics found for this character'}
       </ul>
     </>

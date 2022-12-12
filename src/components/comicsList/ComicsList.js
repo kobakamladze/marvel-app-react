@@ -30,7 +30,7 @@ const ComicsListContent = ({ comicsList }) => {
 // Comic cards skeletton
 const CardsSkeleton = () => {
   const customSkeleton = Array(8).fill(
-    <dic className="comics__item">
+    <div className="comics__item">
       <Skeleton
         variant="rectangular"
         animation="wave"
@@ -45,7 +45,7 @@ const CardsSkeleton = () => {
           height={15}
         />
       </div>
-    </dic>
+    </div>
   );
 
   return <ul className="comics__grid">{customSkeleton}</ul>;
