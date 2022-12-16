@@ -14,6 +14,7 @@ function BasicCharacterInfo({
     description,
     thumbnail,
     urls: { charHomePage, charWikiPage },
+    comics,
   },
 }) {
   let descriptionToDisplay;
@@ -44,18 +45,10 @@ function BasicCharacterInfo({
       <div className="char__descr">
         {descriptionToDisplay || 'No description for this character...'}
       </div>
-    </>
-  );
-}
-
-// Creating list of comics
-function ComicsList({ comicsList }) {
-  return (
-    <>
       <div className="char__comics">Comics:</div>
       <ul className="char__comics-list">
-        {comicsList.length
-          ? comicsList.splice(0, 10).map(({ name, resourceURI }) => {
+        {comics.length
+          ? comics.splice(0, 10).map(({ name, resourceURI }) => {
               const comicId = resourceURI.split('/').at(-1);
               return (
                 <li className="char__comics-item" key={comicId}>
@@ -150,7 +143,6 @@ const CharInfo = props => {
     !loading && !error && chosenCharacter ? (
       <>
         <BasicCharacterInfo data={chosenCharacter} />
-        <ComicsList comicsList={chosenCharacter.comics} />
       </>
     ) : error ? (
       <ErrorMessage />
