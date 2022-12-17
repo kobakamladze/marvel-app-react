@@ -9,16 +9,15 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 import './charInfo.scss';
 
 // Creating element with photo and description of character
-function BasicCharacterInfo({
-  data: {
+function BasicCharacterInfo({ data }) {
+  const {
     name,
     description,
     thumbnail,
     urls: { charHomePage, charWikiPage },
     comics,
-  },
-  loading,
-}) {
+  } = data;
+
   let descriptionToDisplay;
   if (description) {
     const splitDescription = description.split(' ');
@@ -30,7 +29,6 @@ function BasicCharacterInfo({
 
   return (
     <>
-      console.log(state); return (
       <div className="char__basics">
         <img src={thumbnail} alt={name} />
         <div>
@@ -138,46 +136,36 @@ const CharInfo = props => {
     // eslint-disable-next-line
   }, [props.characterId]);
 
-  // const content =
-  //   !loading && !error && chosenCharacter ? (
-  //     <BasicCharacterInfo data={chosenCharacter} loading={loading} />
-  //   ) : error ? (
-  //     <ErrorMessage />
-  //   ) : (
-  //     <CharacterInfoLoadingSkeleton initialTitle={initialTitle} />
-  //   );
+  const content =
+    !loading && !error && chosenCharacter ? (
+      <BasicCharacterInfo data={chosenCharacter} loading={loading} />
+    ) : error ? (
+      <ErrorMessage />
+    ) : (
+      <CharacterInfoLoadingSkeleton initialTitle={initialTitle} />
+    );
 
-  // return <div className="char__info">{content}</div>;
-
+  const defaultStyles = { transiiton: 'all 2000ms ease' };
   const transitionStyles = {
-    entering: { opacity: 1, transiiton: 'all 200ms' },
-    entered: { opacity: 1, transiiton: 'all 200ms' },
-    exiting: { opacity: 0, transiiton: 'all 200ms' },
-    exited: { opacity: 0, transiiton: 'all 200ms' },
+    entering: { opacity: 1, transiiton: 'all 2000ms ease' },
+    entered: { opacity: 1, transiiton: 'all 2000ms ease' },
+    exiting: { opacity: 0, transiiton: 'all 2000ms ease' },
+    exited: { opacity: 0, transiiton: 'all 2000ms ease' },
   };
+
+  console.log(loading);
 
   return (
     <div className="char__info">
-      <Transition in={!loading && !error && chosenCharacter}>
-        {state => (
-          <div style={{ ...transitionStyles[state] }}>
-            <BasicCharacterInfo data={chosenCharacter} />
-          </div>
-        )}
-      </Transition>
-      <Transition in={error && !chosenCharacter}>
-        {state => (
-          <div style={{ ...transitionStyles[state] }}>
-            <ErrorMessage />
-          </div>
-        )}
-      </Transition>
-      <Transition in={loading && !error && chosenCharacter}>
-        {state => (
-          <div style={{ ...transitionStyles[state] }}>
-            <CharacterInfoLoadingSkeleton initialTitle={initialTitle} />
-          </div>
-        )}
+      <Transition in={loading} timeout={2000}>
+        {state => {
+          console.log(state);
+          return (
+            <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
+              {content}
+            </div>
+          );
+        }}
       </Transition>
     </div>
   );
