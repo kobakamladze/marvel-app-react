@@ -187,7 +187,7 @@ const CharInfo = props => {
         )}
       </Transition>
 
-      <Transition in={error} timeout={500}>
+      <Transition in={error} timeout={500} mountOnEnter unmountOnExit>
         {state => (
           <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
             <LocalErrorMessage mountState={error} />

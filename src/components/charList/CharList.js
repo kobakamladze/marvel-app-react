@@ -1,4 +1,6 @@
 import { useState, useEffect } from 'react';
+import { CSSTransition, TransitionGroup } from 'react-transition-group';
+
 import useMarvelService from '../../services/MarvelService';
 
 import ErrorMessage from '../errorMessage/ErrorMessage';
@@ -8,36 +10,50 @@ import { Skeleton } from '@mui/material';
 import './charList.scss';
 
 // Cards skeleton
-const CardsSkeleton = () => {
-  const customSkeleton = (
+const CardsSkeleton = ({ stateMount }) => {
+  if (!stateMount) return null;
+
+  const skeletonCards = Array(6).fill(
     <Skeleton variant="rectangular" animation="wave" width={200} height={318} />
   );
+
   return (
     <div className="char__grid">
-      <ul className="char__grid">{Array(6).fill(customSkeleton)}</ul>
+      <ul className="char__grid">
+        {skeletonCards.map((card, i) => ({ ...card, key: i }))}
+      </ul>
     </div>
   );
 };
 
 // Card
-const CharacterCardsList = ({ charactersList, onCharacterUpdate }) => (
+const CharacterCardsList = ({
+  charactersList,
+  onCharacterUpdate,
+  stateMount,
+}) => (
   <ul className="char__grid">
-    {charactersList.map(
-      ({ name, id, thumbnail, condition: { selected } }, i) => {
-        const selectedClassName = selected ? 'char__item_selected' : null;
+    <TransitionGroup component={null} mountOnEnter>
+      {charactersList.map(
+        ({ name, id, thumbnail, condition: { selected } }) => {
+          const selectedClassName = selected ? 'char__item_selected' : null;
 
-        return (
-          <li
-            key={i}
-            className="char__item"
-            onClick={() => onCharacterUpdate(id)}
-          >
-            <img src={thumbnail} alt="abyss" />
-            <div className={`char__name ${selectedClassName}`}>{name}</div>
-          </li>
-        );
-      }
-    )}
+          return (
+            <CSSTransition
+              in={stateMount}
+              key={id}
+              timeout={{ enter: 250, exit: 500 }}
+              classNames="char__item"
+            >
+              <li className="char__item" onClick={() => onCharacterUpdate(id)}>
+                <img src={thumbnail} alt="abyss" />
+                <div className={`char__name ${selectedClassName}`}>{name}</div>
+              </li>
+            </CSSTransition>
+          );
+        }
+      )}
+    </TransitionGroup>
   </ul>
 );
 
@@ -53,6 +69,11 @@ const LoadMoreButton = ({ charactersList, loading, fetchMoreCharacters }) => {
   ) : loading ? (
     <Spinner styleHeight={{ height: '80px' }} />
   ) : null;
+};
+
+const LocalErrorMessage = ({ stateMount }) => {
+  if (!stateMount) return null;
+  return <ErrorMessage />;
 };
 
 // Generating random offset
@@ -89,21 +110,17 @@ const CharList = props => {
     // eslint-disable-next-line
   }, []);
 
-  const content =
-    loading && !initialFetch ? (
-      <CardsSkeleton />
-    ) : !error ? (
+  return (
+    <div className="char__list">
+      <LocalErrorMessage stateMount={error} />
+      <CardsSkeleton stateMount={loading && !initialFetch} />
+
       <CharacterCardsList
         charactersList={charactersList}
         onCharacterUpdate={props.onCharacterUpdate}
+        stateMount={!loading && !error && Boolean(charactersList.length)}
       />
-    ) : error ? (
-      <ErrorMessage />
-    ) : null;
 
-  return (
-    <div className="char__list">
-      {content}
       <LoadMoreButton
         loading={loading}
         charactersList={charactersList}
