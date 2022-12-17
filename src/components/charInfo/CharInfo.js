@@ -9,14 +9,18 @@ import ErrorMessage from '../errorMessage/ErrorMessage';
 import './charInfo.scss';
 
 // Creating element with photo and description of character
-function BasicCharacterInfo({ data }) {
+function BasicCharacterInfo({ data, mountState }) {
+  if (!mountState) return null;
+
+  // deep cloning of data recieved as a prop
+  const clonedData = JSON.parse(JSON.stringify(data));
   const {
     name,
     description,
     thumbnail,
     urls: { charHomePage, charWikiPage },
     comics,
-  } = data;
+  } = clonedData;
 
   let descriptionToDisplay;
   if (description) {
@@ -64,7 +68,9 @@ function BasicCharacterInfo({ data }) {
 }
 
 // Skeleton for loading
-const CharacterInfoLoadingSkeleton = ({ initialTitle }) => {
+const CharacterInfoLoadingSkeleton = ({ initialTitle, mountState }) => {
+  if (!mountState) return null;
+
   const title = initialTitle ? (
     <p
       style={{
@@ -136,36 +142,52 @@ const CharInfo = props => {
     // eslint-disable-next-line
   }, [props.characterId]);
 
-  const content =
-    !loading && !error && chosenCharacter ? (
-      <BasicCharacterInfo data={chosenCharacter} loading={loading} />
-    ) : error ? (
-      <ErrorMessage />
-    ) : (
-      <CharacterInfoLoadingSkeleton initialTitle={initialTitle} />
-    );
-
-  const defaultStyles = { transiiton: 'all 2000ms ease' };
+  const defaultStyles = { opacity: 0, transition: 'all 500ms ease' };
   const transitionStyles = {
-    entering: { opacity: 1, transiiton: 'all 2000ms ease' },
-    entered: { opacity: 1, transiiton: 'all 2000ms ease' },
-    exiting: { opacity: 0, transiiton: 'all 2000ms ease' },
-    exited: { opacity: 0, transiiton: 'all 2000ms ease' },
+    entering: { opacity: 1, transition: 'all 500ms ease' },
+    entered: { opacity: 1, transition: 'all 500ms ease' },
+    exiting: { opacity: 0, transition: 'all 500ms ease' },
+    exited: { opacity: 0, transition: 'all 500ms ease' },
   };
-
-  console.log(loading);
 
   return (
     <div className="char__info">
-      <Transition in={loading} timeout={2000}>
-        {state => {
-          console.log(state);
-          return (
-            <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
-              {content}
-            </div>
-          );
-        }}
+      <Transition
+        in={!loading && !error && Boolean(chosenCharacter)}
+        timeout={500}
+        mountOnEnter
+        unmountOnExit
+      >
+        {state => (
+          <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
+            <BasicCharacterInfo
+              data={chosenCharacter}
+              mountState={!loading && !error && Boolean(chosenCharacter)}
+              loading={loading}
+            />
+          </div>
+        )}
+      </Transition>
+
+      <Transition in={loading && !error} timeout={500}>
+        {state => (
+          <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
+            <CharacterInfoLoadingSkeleton
+              initialTitle={initialTitle}
+              mountState={loading && !error}
+              mountOnEnter
+              unmountOnExit
+            />
+          </div>
+        )}
+      </Transition>
+
+      <Transition in={error} timeout={500}>
+        {state => (
+          <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
+            <ErrorMessage />
+          </div>
+        )}
       </Transition>
     </div>
   );
