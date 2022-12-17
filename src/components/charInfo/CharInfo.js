@@ -1,6 +1,7 @@
 import { Skeleton } from '@mui/material';
 import { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import Transition from 'react-transition-group/Transition';
 
 import useMarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/ErrorMessage';
@@ -16,6 +17,7 @@ function BasicCharacterInfo({
     urls: { charHomePage, charWikiPage },
     comics,
   },
+  loading,
 }) {
   let descriptionToDisplay;
   if (description) {
@@ -28,6 +30,7 @@ function BasicCharacterInfo({
 
   return (
     <>
+      console.log(state); return (
       <div className="char__basics">
         <img src={thumbnail} alt={name} />
         <div>
@@ -126,10 +129,6 @@ const CharInfo = props => {
       .finally();
   };
 
-  // Updating character when component is mounted to display its info
-  // eslint-disable-next-line
-  useEffect(() => updateCharacterInfo, []);
-
   // Updating character to display its info
   useEffect(() => {
     async function fetchData() {
@@ -139,18 +138,49 @@ const CharInfo = props => {
     // eslint-disable-next-line
   }, [props.characterId]);
 
-  const content =
-    !loading && !error && chosenCharacter ? (
-      <>
-        <BasicCharacterInfo data={chosenCharacter} />
-      </>
-    ) : error ? (
-      <ErrorMessage />
-    ) : (
-      <CharacterInfoLoadingSkeleton initialTitle={initialTitle} />
-    );
+  // const content =
+  //   !loading && !error && chosenCharacter ? (
+  //     <BasicCharacterInfo data={chosenCharacter} loading={loading} />
+  //   ) : error ? (
+  //     <ErrorMessage />
+  //   ) : (
+  //     <CharacterInfoLoadingSkeleton initialTitle={initialTitle} />
+  //   );
 
-  return <div className="char__info">{content}</div>;
+  // return <div className="char__info">{content}</div>;
+
+  const transitionStyles = {
+    entering: { opacity: 1, transiiton: 'all 200ms' },
+    entered: { opacity: 1, transiiton: 'all 200ms' },
+    exiting: { opacity: 0, transiiton: 'all 200ms' },
+    exited: { opacity: 0, transiiton: 'all 200ms' },
+  };
+
+  return (
+    <div className="char__info">
+      <Transition in={!loading && !error && chosenCharacter}>
+        {state => (
+          <div style={{ ...transitionStyles[state] }}>
+            <BasicCharacterInfo data={chosenCharacter} />
+          </div>
+        )}
+      </Transition>
+      <Transition in={error && !chosenCharacter}>
+        {state => (
+          <div style={{ ...transitionStyles[state] }}>
+            <ErrorMessage />
+          </div>
+        )}
+      </Transition>
+      <Transition in={loading && !error && chosenCharacter}>
+        {state => (
+          <div style={{ ...transitionStyles[state] }}>
+            <CharacterInfoLoadingSkeleton initialTitle={initialTitle} />
+          </div>
+        )}
+      </Transition>
+    </div>
+  );
 };
 
 export default CharInfo;
