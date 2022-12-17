@@ -101,6 +101,11 @@ const CharacterInfoLoadingSkeleton = ({ initialTitle, mountState }) => {
   );
 };
 
+const LocalErrorMessage = ({ mountState }) => {
+  if (!mountState) return null;
+  return <ErrorMessage />;
+};
+
 // Main function component
 const CharInfo = props => {
   // State
@@ -185,7 +190,7 @@ const CharInfo = props => {
       <Transition in={error} timeout={500}>
         {state => (
           <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
-            <ErrorMessage />
+            <LocalErrorMessage mountState={error} />
           </div>
         )}
       </Transition>
