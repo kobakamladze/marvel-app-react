@@ -149,10 +149,10 @@ const CharInfo = props => {
 
   const defaultStyles = { opacity: 0, transition: 'all 500ms ease' };
   const transitionStyles = {
-    entering: { opacity: 1, transition: 'all 500ms ease' },
-    entered: { opacity: 1, transition: 'all 500ms ease' },
-    exiting: { opacity: 0, transition: 'all 500ms ease' },
-    exited: { opacity: 0, transition: 'all 500ms ease' },
+    entering: { opacity: 1 },
+    entered: { opacity: 1 },
+    exiting: { opacity: 0 },
+    exited: { opacity: 0 },
   };
 
   return (
@@ -160,8 +160,6 @@ const CharInfo = props => {
       <Transition
         in={!loading && !error && Boolean(chosenCharacter)}
         timeout={500}
-        mountOnEnter
-        unmountOnExit
       >
         {state => (
           <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
@@ -180,8 +178,6 @@ const CharInfo = props => {
             <CharacterInfoLoadingSkeleton
               initialTitle={initialTitle}
               mountState={loading && !error}
-              mountOnEnter
-              unmountOnExit
             />
           </div>
         )}

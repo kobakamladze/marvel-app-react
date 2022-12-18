@@ -9,8 +9,8 @@ import Spinner from '../spinner/spinner';
 import useMarvelService from '../../services/MarvelService';
 
 // Character
-function CharacterStateRender({ character, stateMount }) {
-  if (!stateMount) return null;
+function CharacterStateRender({ character, mountState }) {
+  if (!mountState) return null;
 
   const {
     name,
@@ -19,12 +19,14 @@ function CharacterStateRender({ character, stateMount }) {
     urls: { charHomePage, charWikiPage },
   } = character;
 
+  const descriptionToDisplay = description.split(' ').splice(0, 30).join(' ');
+
   return (
     <div className="randomchar__block">
       <img src={thumbnail} alt="Random character" className="randomchar__img" />
       <div className="randomchar__info">
         <p className="randomchar__name">{name}</p>
-        <p className="randomchar__descr">{description}</p>
+        <p className="randomchar__descr">{descriptionToDisplay}</p>
         <div className="randomchar__btns">
           <a href={charHomePage} className="button button__main">
             <div className="inner">homepage</div>
@@ -38,14 +40,13 @@ function CharacterStateRender({ character, stateMount }) {
   );
 }
 
-const LocalErrorMessage = ({ stateMount }) => {
-  if (!stateMount) return null;
+const LocalErrorMessage = ({ mountState }) => {
+  if (!mountState) return null;
   return <ErrorMessage />;
 };
 
-const LocalSipnner = ({ stateMount }) => {
-  console.log(stateMount);
-  if (!stateMount) return null;
+const LocalSpinner = ({ mountState }) => {
+  if (!mountState) return null;
   return <Spinner />;
 };
 
@@ -111,58 +112,72 @@ const RandomChar = () => {
     // eslint-disable-next-line
   }, []);
 
+  const defaultStyles = {
+    display: 'flex',
+    justifyContent: 'center',
+    alignItems: 'center',
+    height: '100%',
+    width: 0,
+    transition: 'opacity 500ms ease',
+  };
   const transitionStyles = {
-    entering: { opacity: 1 },
-    entered: { opacity: 1 },
-    exiting: { opacity: 0 },
-    exited: { opacity: 0 },
+    entering: { opacity: 1, width: 'auto' },
+    entered: { opacity: 1, width: 'auto' },
+    exiting: { opacity: 0, width: 0, height: 0 },
+    exited: { opacity: 0, width: 0, height: 0 },
   };
 
   return (
     <div className="randomchar">
-      <>
-        <Transition in={loading} timeout={200} unmountOnExit>
+      <div>
+        <Transition in={loading} timeout={500}>
           {state => {
-            console.log(state);
             return (
               <div
                 style={{
-                  display: 'flex',
-                  justifyContent: 'center',
-                  alignItems: 'center',
-                  transition: 'all 100ms ease',
+                  ...defaultStyles,
                   ...transitionStyles[state],
                 }}
               >
-                <LocalSipnner stateMount={loading} />
-                <LocalErrorMessage stateMount={error} />
+                <LocalSpinner mountState={loading} />
               </div>
             );
           }}
         </Transition>
-        <Transition
-          in={!loading}
-          timeout={{ enter: 200, exit: 100 }}
-          mountOnEnter
-        >
+
+        <Transition in={!loading && !error} timeout={500}>
           {state => {
-            console.log(state);
             return (
               <div
                 style={{
-                  transition: 'all 200ms ease',
+                  ...defaultStyles,
                   ...transitionStyles[state],
                 }}
               >
                 <CharacterStateRender
                   character={character}
-                  stateMount={!loading && !error}
+                  mountState={!loading && !error}
                 />
               </div>
             );
           }}
         </Transition>
-      </>
+
+        <Transition in={error} timeout={500}>
+          {state => {
+            return (
+              <div
+                style={{
+                  ...defaultStyles,
+                  ...transitionStyles[state],
+                }}
+              >
+                <LocalErrorMessage mountState={error} />
+              </div>
+            );
+          }}
+        </Transition>
+      </div>
 
       <div className="randomchar__static">
         <p className="randomchar__title">

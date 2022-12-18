@@ -10,6 +10,7 @@ class ErrorMessage extends Component {
           display: 'flex',
           justifyContent: 'center',
           alignItems: 'center',
+          height: '100%',
         }}
       >
         <img src={error} style={{ height: '100px' }} alt="ERROR" />
