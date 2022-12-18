@@ -1,4 +1,5 @@
 import { useEffect, useState } from 'react';
+import { Transition } from 'react-transition-group';
 
 import './randomChar.scss';
 import mjolnir from '../../resources/img/mjolnir.png';
@@ -7,14 +8,16 @@ import Spinner from '../spinner/spinner';
 
 import useMarvelService from '../../services/MarvelService';
 
-// Characters
-function CharacterStateRender(response) {
+// Character
+function CharacterStateRender({ character, stateMount }) {
+  if (!stateMount) return null;
+
   const {
     name,
     description,
     thumbnail,
     urls: { charHomePage, charWikiPage },
-  } = response.characterData;
+  } = character;
 
   return (
     <div className="randomchar__block">
@@ -35,8 +38,19 @@ function CharacterStateRender(response) {
   );
 }
 
+const LocalErrorMessage = ({ stateMount }) => {
+  if (!stateMount) return null;
+  return <ErrorMessage />;
+};
+
+const LocalSipnner = ({ stateMount }) => {
+  console.log(stateMount);
+  if (!stateMount) return null;
+  return <Spinner />;
+};
+
 // Cut description if it contains more than 35 words
-function descriptionViewManament(description) {
+function descriptionViewManagment(description) {
   const paragraphWordsAmount = description.split(' ');
 
   if (paragraphWordsAmount.length <= 35) {
@@ -76,7 +90,7 @@ const RandomChar = () => {
         return setCharacter(() => ({
           name,
           description: description
-            ? descriptionViewManament(description)
+            ? descriptionViewManagment(description)
             : 'No description for this character...',
           thumbnail,
           urls: {
@@ -97,17 +111,58 @@ const RandomChar = () => {
     // eslint-disable-next-line
   }, []);
 
-  const errorElem = error ? <ErrorMessage /> : null;
-  const loadingElem = loading ? <Spinner /> : null;
-  const characterView =
-    !loading && !error ? (
-      <CharacterStateRender characterData={character} />
-    ) : null;
-  const randomCharContent = characterView || loadingElem || errorElem;
+  const transitionStyles = {
+    entering: { opacity: 1 },
+    entered: { opacity: 1 },
+    exiting: { opacity: 0 },
+    exited: { opacity: 0 },
+  };
 
   return (
     <div className="randomchar">
-      {randomCharContent}
+      <>
+        <Transition in={loading} timeout={200} unmountOnExit>
+          {state => {
+            console.log(state);
+            return (
+              <div
+                style={{
+                  display: 'flex',
+                  justifyContent: 'center',
+                  alignItems: 'center',
+                  transition: 'all 100ms ease',
+                  ...transitionStyles[state],
+                }}
+              >
+                <LocalSipnner stateMount={loading} />
+                <LocalErrorMessage stateMount={error} />
+              </div>
+            );
+          }}
+        </Transition>
+        <Transition
+          in={!loading}
+          timeout={{ enter: 200, exit: 100 }}
+          mountOnEnter
+        >
+          {state => {
+            console.log(state);
+            return (
+              <div
+                style={{
+                  transition: 'all 200ms ease',
+                  ...transitionStyles[state],
+                }}
+              >
+                <CharacterStateRender
+                  character={character}
+                  stateMount={!loading && !error}
+                />
+              </div>
+            );
+          }}
+        </Transition>
+      </>
 
       <div className="randomchar__static">
         <p className="randomchar__title">
