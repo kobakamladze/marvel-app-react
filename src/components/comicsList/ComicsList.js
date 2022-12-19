@@ -3,26 +3,42 @@ import './comicsList.scss';
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 import { Skeleton } from '@mui/material';
+import { TransitionGroup, CSSTransition } from 'react-transition-group';
 
 import useMarvelService from '../../services/MarvelService';
 import ErrorMessage from '../errorMessage/ErrorMessage';
 import Spinner from '../spinner/spinner';
 
 // Comic card
-const ComicsListContent = ({ comicsList }) => {
+const ComicsListContent = ({ comicsList, stateMount }) => {
   return (
     <ul className="comics__grid">
-      {comicsList.map(({ id, title, thumbnail, price }, i) => (
-        <li className="comics__item" key={i}>
-          <Link to={`/comic/${id}`}>
-            <img src={thumbnail} alt={title} className="comics__item-img" />
-            <div className="comics__item-name">{title}</div>
-            <div className="comics__item-price">
-              {price ? `${price}$` : 'Unknown price...'}
-            </div>
-          </Link>
-        </li>
-      ))}
+      <TransitionGroup component={null} mountOnEnter>
+        {comicsList.map(({ id, title, thumbnail, price }) => {
+          return (
+            <CSSTransition
+              in={stateMount}
+              key={id}
+              timeout={300}
+              classNames="comics__item"
+            >
+              <li className="comics__item" key={id}>
+                <Link to={`/comic/${id}`}>
+                  <img
+                    src={thumbnail}
+                    alt={title}
+                    className="comics__item-img"
+                  />
+                  <div className="comics__item-name">{title}</div>
+                  <div className="comics__item-price">
+                    {price ? `${price}$` : 'Unknown price...'}
+                  </div>
+                </Link>
+              </li>
+            </CSSTransition>
+          );
+        })}
+      </TransitionGroup>
     </ul>
   );
 };
@@ -48,7 +64,13 @@ const CardsSkeleton = () => {
     </div>
   );
 
-  return <ul className="comics__grid">{customSkeleton}</ul>;
+  return (
+    <>
+      <ul className="comics__grid">
+        {customSkeleton.map((card, i) => ({ ...card, key: i }))}
+      </ul>
+    </>
+  );
 };
 
 // Load more button component
@@ -105,13 +127,15 @@ const ComicsList = () => {
       <CardsSkeleton />
     ) : error ? (
       <ErrorMessage />
-    ) : (
-      <ComicsListContent comicsList={comicsList} />
-    );
+    ) : null;
 
   return (
     <div className="comics__list">
       {content}
+      <ComicsListContent
+        comicsList={comicsList}
+        stateMount={!loading && !error && Boolean(comicsList.length)}
+      />
       <LoadMoreButton
         comicsList={comicsList}
         fetchMoreComics={fetchMoreComics}

@@ -22,7 +22,7 @@
     box-shadow: 5px 5px 10px rgba(0, 0, 0, 0.25);
     padding: 15px;
     cursor: pointer;
-    transition: 0.3s transform;
+    transition: all 0.3s;
     img {
       width: 200px;
       height: 200px;
@@ -33,20 +33,20 @@
   &__item-enter {
     opacity: 0;
     transform: translateY(-8px);
-    transition: all 500ms ease-in;
   }
   &__item-enter-active {
     opacity: 1;
-    transform: translateY(-4px);
-    transition: all 500ms ease-in;
+    transform: translateY(-8px);
   }
   &__item-exit {
     opacity: 1;
-    transition: all 500ms ease-in;
   }
   &__item-exit-active {
     opacity: 0;
-    transition: all 500ms ease-in;
+  }
+  &__item_selected {
+    box-shadow: 0 5px 20px $main-color;
+    transform: translateY(-8px);
   }
   &__item:hover {
     box-shadow: 0 5px 20px $main-color;

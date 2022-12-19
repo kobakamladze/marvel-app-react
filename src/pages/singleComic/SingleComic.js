@@ -1,8 +1,11 @@
 import './singleComic.scss';
-import { Link, useParams } from 'react-router-dom';
-import useMarvelService from '../../services/MarvelService';
+
 import { useEffect, useState } from 'react';
+import { Link, useParams } from 'react-router-dom';
 import { Skeleton } from '@mui/material';
+import { Transition } from 'react-transition-group';
+
+import useMarvelService from '../../services/MarvelService';
 import ErrorMessage from '../../components/errorMessage/ErrorMessage';
 
 const ComicInfo = props => {
@@ -75,12 +78,41 @@ const SingleComic = () => {
     // eslint-disable-next-line
   }, []);
 
-  return comic && !loading && !error ? (
-    <ComicInfo comic={comic} />
-  ) : loading && !error ? (
-    <CustomSkeleton />
-  ) : (
-    <ErrorMessage />
+  const defaultStyles = {
+    height: 0,
+    transition: 'opacity 500ms ease',
+  };
+  const transitionStyles = {
+    entering: { opacity: 1, height: 'auto' },
+    entered: { opacity: 1, height: 'auto' },
+    exiting: { opacity: 0, height: 0 },
+    exited: { opacity: 0, height: 0 },
+  };
+
+  return (
+    <>
+      <Transition in={!loading && !error && Boolean(comic)} timeout={500}>
+        {state => (
+          <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
+            <ComicInfo comic={comic} />
+          </div>
+        )}
+      </Transition>
+      <Transition in={loading && !error} timeout={500}>
+        {state => (
+          <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
+            <CustomSkeleton />
+          </div>
+        )}
+      </Transition>
+      <Transition in={error} timeout={500}>
+        {state => (
+          <div style={{ ...defaultStyles, ...transitionStyles[state] }}>
+            <ErrorMessage />
+          </div>
+        )}
+      </Transition>
+    </>
   );
 };
 

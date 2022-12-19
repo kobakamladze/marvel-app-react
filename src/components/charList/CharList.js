@@ -36,7 +36,7 @@ const CharacterCardsList = ({
     <TransitionGroup component={null} mountOnEnter>
       {charactersList.map(
         ({ name, id, thumbnail, condition: { selected } }) => {
-          const selectedClassName = selected ? 'char__item_selected' : null;
+          const selectedClassName = selected ? 'char__item_selected' : '';
 
           return (
             <CSSTransition
@@ -45,9 +45,12 @@ const CharacterCardsList = ({
               timeout={{ enter: 250, exit: 500 }}
               classNames="char__item"
             >
-              <li className="char__item" onClick={() => onCharacterUpdate(id)}>
+              <li
+                className={`char__item ${selectedClassName}`}
+                onClick={() => onCharacterUpdate(id)}
+              >
                 <img src={thumbnail} alt="abyss" />
-                <div className={`char__name ${selectedClassName}`}>{name}</div>
+                <div className="char__name">{name}</div>
               </li>
             </CSSTransition>
           );
